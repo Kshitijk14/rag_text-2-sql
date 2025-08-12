@@ -1,8 +1,9 @@
 llama-index
 llama-index-llms-ollama 
 llama-index-embeddings-huggingface
+llama-index-callbacks-arize-phoenix 
 arize-phoenix 
-pyvis
+arize-phoenix[evals] openinference-instrumentation-llama-index
 # langchain
 # langchain-community
 # langchain-chroma
@@ -14,13 +15,14 @@ chromadb
 pytest
 pyyaml
 psutil
+pyvis
 python-dotenv
 requests
 # tqdm
 # sentence-transformers
 # transformers 
 # torch
-# huggingface_hub[hf_xet]
+huggingface_hub[hf_xet]
 # tiktoken
 numpy
 pandas
