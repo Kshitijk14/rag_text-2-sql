@@ -1,0 +1,33 @@
+llama-index
+llama-index-llms-ollama 
+llama-index-embeddings-huggingface
+arize-phoenix 
+pyvis
+# langchain
+# langchain-community
+# langchain-chroma
+# langchain-huggingface
+# langchain-ollama
+# unstructured
+onnxruntime
+chromadb
+pytest
+pyyaml
+psutil
+python-dotenv
+requests
+# tqdm
+# sentence-transformers
+# transformers 
+# torch
+# huggingface_hub[hf_xet]
+# tiktoken
+numpy
+pandas
+matplotlib
+# seaborn
+# scikit-learn
+
+
+# `pip install -U langchain-chroma`
+# `pip install "unstructured[md]"`

@@ -132,6 +132,7 @@ celerybeat.pid
 .venv
 env/
 venv/
+rag/
 ENV/
 env.bak/
 venv.bak/
@@ -179,3 +180,9 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+
+data/
+chromadb/
+outputs/
+results/
