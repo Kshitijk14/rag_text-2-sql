@@ -184,5 +184,4 @@ cython_debug/
 
 data/
 chromadb/
-outputs/
 results/
