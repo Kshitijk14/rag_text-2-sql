@@ -3,7 +3,8 @@ llama-index-llms-ollama
 llama-index-embeddings-huggingface
 llama-index-callbacks-arize-phoenix 
 arize-phoenix 
-arize-phoenix[evals] openinference-instrumentation-llama-index
+arize-phoenix[evals] 
+openinference-instrumentation-llama-index
 # langchain
 # langchain-community
 # langchain-chroma
