@@ -10,6 +10,7 @@ project_name = "rag_query_resolution"
 list_of_files = [
     "data/.gitkeep",
     "chromadb/.gitkeep",
+    "sqlite/.gitkeep",
     "results/.gitkeep",
     "outputs/.gitkeep",
     # "notebooks/trials.ipynb",
