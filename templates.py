@@ -5,7 +5,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s]: %(message)s:')
 
 
-project_name = "rag_query_resolution"
+project_name = "rag_text-2-sql"
 
 list_of_files = [
     "data/.gitkeep",

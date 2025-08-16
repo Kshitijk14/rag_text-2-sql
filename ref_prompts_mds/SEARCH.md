@@ -437,7 +437,7 @@ async def run_text2sql_workflow(query: str):
     return result
 ```
 
-
+WITH THIS NEW TABLE PARSER HAVING ROW RETRIEVALS -> I WANT TO WRITE THE NEW WORKFLOW
 USING THE WORKFLOW REFERENCE EXAMPLE FOR ONLY TABLE RETRIEVALS. NOW, I WANT TO REPLICATE THE DEPRECATED QUERY PIPELINE FLOW WITH TABLE & ROW RETRIEVALS, USING WORKFLOWS AS PROVIDED IN THE REFERENCE EXAMPLE ABOVE.
 THE NEW WORKFLOW will be inside of a class named 'class Text2SQLWorkflowRowRetrieval(Workflow):', where there will be multiple steps (from StartEvent, to StopEvent)
 

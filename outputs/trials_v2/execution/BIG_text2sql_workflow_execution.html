@@ -1,0 +1,155 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 750px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#90EE90", "id": "StartEvent_0", "label": "StartEvent", "shape": "ellipse"}, {"color": "#ADD8E6", "id": "input_step_0", "label": "input_step", "shape": "box"}, {"color": "#90EE90", "id": "TableRetrievedEvent_1", "label": "TableRetrievedEvent", "shape": "ellipse"}, {"color": "#ADD8E6", "id": "table_output_parser_step_1", "label": "table_output_parser_step", "shape": "box"}, {"color": "#90EE90", "id": "SchemaProcessedEvent_2", "label": "SchemaProcessedEvent", "shape": "ellipse"}, {"color": "#ADD8E6", "id": "text2sql_prompt_step_2", "label": "text2sql_prompt_step", "shape": "box"}, {"color": "#90EE90", "id": "SQLPromptReadyEvent_3", "label": "SQLPromptReadyEvent", "shape": "ellipse"}, {"color": "#ADD8E6", "id": "text2sql_llm_step_3", "label": "text2sql_llm_step", "shape": "box"}, {"color": "#90EE90", "id": "SQLGeneratedEvent_4", "label": "SQLGeneratedEvent", "shape": "ellipse"}, {"color": "#ADD8E6", "id": "sql_output_parser_step_4", "label": "sql_output_parser_step", "shape": "box"}, {"color": "#90EE90", "id": "SQLParsedEvent_5", "label": "SQLParsedEvent", "shape": "ellipse"}, {"color": "#ADD8E6", "id": "sql_retriever_step_5", "label": "sql_retriever_step", "shape": "box"}, {"color": "#90EE90", "id": "SQLResultsEvent_6", "label": "SQLResultsEvent", "shape": "ellipse"}, {"color": "#ADD8E6", "id": "text2sql_prompt_step_6", "label": "text2sql_prompt_step", "shape": "box"}, {"color": "#90EE90", "id": "SQLResultsEvent_7", "label": "SQLResultsEvent", "shape": "ellipse"}, {"color": "#ADD8E6", "id": "response_synthesis_prompt_step_7", "label": "response_synthesis_prompt_step", "shape": "box"}, {"color": "#90EE90", "id": "ResponsePromptReadyEvent_8", "label": "ResponsePromptReadyEvent", "shape": "ellipse"}, {"color": "#ADD8E6", "id": "response_synthesis_llm_step_8", "label": "response_synthesis_llm_step", "shape": "box"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "from": "StartEvent_0", "to": "input_step_0"}, {"arrows": "to", "from": "TableRetrievedEvent_1", "to": "table_output_parser_step_1"}, {"arrows": "to", "from": "input_step_0", "to": "TableRetrievedEvent_1"}, {"arrows": "to", "from": "SchemaProcessedEvent_2", "to": "text2sql_prompt_step_2"}, {"arrows": "to", "from": "table_output_parser_step_1", "to": "SchemaProcessedEvent_2"}, {"arrows": "to", "from": "SQLPromptReadyEvent_3", "to": "text2sql_llm_step_3"}, {"arrows": "to", "from": "text2sql_prompt_step_2", "to": "SQLPromptReadyEvent_3"}, {"arrows": "to", "from": "SQLGeneratedEvent_4", "to": "sql_output_parser_step_4"}, {"arrows": "to", "from": "text2sql_llm_step_3", "to": "SQLGeneratedEvent_4"}, {"arrows": "to", "from": "SQLParsedEvent_5", "to": "sql_retriever_step_5"}, {"arrows": "to", "from": "sql_output_parser_step_4", "to": "SQLParsedEvent_5"}, {"arrows": "to", "from": "SQLResultsEvent_6", "to": "text2sql_prompt_step_6"}, {"arrows": "to", "from": "sql_retriever_step_5", "to": "SQLResultsEvent_6"}, {"arrows": "to", "from": "SQLResultsEvent_7", "to": "response_synthesis_prompt_step_7"}, {"arrows": "to", "from": "text2sql_prompt_step_6", "to": "SQLResultsEvent_7"}, {"arrows": "to", "from": "ResponsePromptReadyEvent_8", "to": "response_synthesis_llm_step_8"}, {"arrows": "to", "from": "response_synthesis_prompt_step_7", "to": "ResponsePromptReadyEvent_8"}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
