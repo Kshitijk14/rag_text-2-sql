@@ -183,6 +183,5 @@ cython_debug/
 
 
 data/
-chromadb/
-sqlite/
+db/
 results/

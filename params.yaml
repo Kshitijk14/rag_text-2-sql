@@ -1,0 +1,35 @@
+LOG_PATH: "logs"
+
+LOCAL_DATA_DIR: "data"
+
+LOCAL_EX1_DATA_PATH: "data/data.zip"
+LOCAL_EX1_DATA_FOLDER_DIR: "data/WikiTableQuestions/csv/200-csv"
+LOCAL_EX1_DATA_TABLE_INFO_DIR: "data/WikiTableQuestions_TableInfo"
+LOCAL_EX1_DATA_TABLE_INDEX_DIR: "data/table_index_dir"
+
+SQLiteDB_DIR: "db/sqlite"
+SQLITE_DB_FILE: "db/sqlite/db.sqlite3"
+CHROMA_DB_DIR: "db/chroma_db"
+CHROMA_DB_FILE: "db/chroma_db/chroma.db"
+
+WORKFLOW_VISUALIZATION_DIR: "outputs/workflow_visualization"
+
+
+QUERY_1: "What was the year that The Notorious B.I.G was signed to Bad Boy?"
+QUERY_1_INITIAL: "BIG"
+QUERY_2: "Who won best director in the 1972 academy awards?"
+QUERY_2_INITIAL: "Best_Dir_1972"
+
+
+MAX_RETRIES: 3 # attempts to retry failed requests
+
+MODEL_TEMPERATURE: 0.1
+MODEL_REQUEST_TIMEOUT: 480 # seconds
+MODEL_CONTEXT_WINDOW: 8000
+MODEL_OUTPUT_FORMAT: "json"
+MODEL_OUTPUT_FORMAT_JSON: true
+MODEL_THINKING: true
+
+
+LOCAL_EMBEDDING_MODEL: "sentence-transformers/all-MiniLM-L6-v2"
+LOCAL_LLM_MODEL: "qwen3:0.6b"
