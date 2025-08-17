@@ -1,0 +1,27 @@
+[project]
+name = "rag-text-2-sql"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "arize-phoenix[evals]>=11.24.1",
+    "chromadb>=1.0.17",
+    "huggingface-hub[hf-xet]>=0.34.4",
+    "llama-index>=0.13.2",
+    "llama-index-callbacks-arize-phoenix>=0.6.0",
+    "llama-index-embeddings-huggingface>=0.6.0",
+    "llama-index-llms-ollama>=0.7.1",
+    "llama-index-utils-workflow>=0.4.0",
+    "matplotlib>=3.10.5",
+    "numpy>=2.3.2",
+    "onnxruntime>=1.22.1",
+    "openinference-instrumentation-llama-index>=4.3.4",
+    "pandas>=2.2.3",
+    "psutil>=7.0.0",
+    "pytest>=8.4.1",
+    "python-dotenv>=1.1.1",
+    "pyvis>=0.3.2",
+    "pyyaml>=6.0.2",
+    "requests>=2.32.4",
+]
