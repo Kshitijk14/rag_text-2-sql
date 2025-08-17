@@ -18,7 +18,7 @@ from llama_index.core.prompts.default_prompts import DEFAULT_TEXT_TO_SQL_PROMPT
 from llama_index.core.prompts import PromptTemplate
 from llama_index.core.tools import FunctionTool
 from llama_index.core.llms import ChatResponse
-from llama_index.core.callbacks import CallbackManager
+# from llama_index.core.callbacks import CallbackManager
 from llama_index.core.schema import TextNode
 from llama_index.core.storage import StorageContext
 from llama_index.core.workflow import (
