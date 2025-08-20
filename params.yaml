@@ -18,8 +18,6 @@ WORKFLOW_VISUALIZATION_DIR: "outputs/Chinook/workflow_visualization"
 
 QUERY_1: "What is the billing city of Leonie Köhler?"
 QUERY_1_INITIAL: "LK"
-QUERY_2: "Who won best director in the 1972 academy awards?"
-QUERY_2_INITIAL: "Best_Dir_1972"
 
 
 TOP_K: 5

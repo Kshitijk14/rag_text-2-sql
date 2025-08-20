@@ -35,6 +35,8 @@ class SQLResultsEvent(Event):
     sql_query: str
     query_str: str
     success: bool = True
+    retry_count: int = 0
 
 class ResponsePromptReadyEvent(Event):
+    query_str: str
     rs_prompt: str
