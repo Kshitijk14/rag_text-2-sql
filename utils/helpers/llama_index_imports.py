@@ -5,6 +5,7 @@ from llama_index.core import (
     load_index_from_storage,
     set_global_handler,
 )
+from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.core.program import LLMTextCompletionProgram
 from llama_index.llms.ollama import Ollama
 from llama_index.core.objects import (

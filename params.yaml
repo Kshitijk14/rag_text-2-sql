@@ -7,21 +7,23 @@ LOCAL_EX1_DATA_FOLDER_DIR: "data/ex1/WikiTableQuestions/csv/200-csv"
 LOCAL_EX1_DATA_TABLE_INFO_DIR: "data/ex1/WikiTableQuestions_TableInfo"
 LOCAL_EX1_DATA_TABLE_INDEX_DIR: "data/ex1/table_index_dir"
 
-SQLITE_DB_DIR: "db/sqlite"
-SQLITE_DB_FILE: "db/sqlite/db.sqlite3"
-CHROMA_DB_DIR: "db/chroma_db"
-CHROMA_DB_FILE: "db/chroma_db/chroma.db"
+CHINOOK_DBEAVER_DB_PATH: "C:/Users/Hp/AppData/Roaming/DBeaverData/workspace6/.metadata/sample-database-sqlite-1/Chinook.db"
+CHINOOK_TABLE_INDEX_DIR: "db/Chinook/sqlite/table_index"
 
-WORKFLOW_VISUALIZATION_DIR: "outputs/workflow_visualization"
+SQLITE_DB_DIR: "db/Chinook/sqlite"
+CHROMA_DB_DIR: "db/Chinook/chromadb"
+
+WORKFLOW_VISUALIZATION_DIR: "outputs/Chinook/workflow_visualization"
 
 
-QUERY_1: "What was the year that The Notorious B.I.G was signed to Bad Boy?"
-QUERY_1_INITIAL: "BIG"
+QUERY_1: "What is the billing city of Leonie Köhler?"
+QUERY_1_INITIAL: "LK"
 QUERY_2: "Who won best director in the 1972 academy awards?"
 QUERY_2_INITIAL: "Best_Dir_1972"
 
 
 TOP_K: 5
+TOP_N: 2
 MAX_RETRIES: 3 # attempts to retry failed requests
 
 MODEL_TEMPERATURE: 0.1

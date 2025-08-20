@@ -1,6 +1,7 @@
 llama-index
 llama-index-llms-ollama 
 llama-index-embeddings-huggingface
+llama-index-vector-stores-chroma
 llama-index-utils-workflow
 llama-index-callbacks-arize-phoenix 
 arize-phoenix 

@@ -19,3 +19,5 @@ import pandas as pd
 
 # setup Arize Phoenix for logging/observability
 import phoenix as px
+
+import chromadb
