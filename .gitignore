@@ -129,6 +129,8 @@ celerybeat.pid
 
 # Environments
 .env
+# .env.*
+.env.local
 .venv
 .venv/
 env/
@@ -182,6 +184,7 @@ cython_debug/
 .cursorindexingignore
 
 
+AN_IMPORTANT_SHIT/
 data/
 db/
 results/

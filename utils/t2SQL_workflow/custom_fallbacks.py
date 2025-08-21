@@ -5,25 +5,23 @@ from .helpers import (
 )
 
 
-def extract_sql_from_response(llm_response: str) -> str:
-    """
-    Extract SQL query from LLM response that might contain reasoning or formatting.
-    """
+def extract_sql_from_response(llm_response: str, logger) -> str:
+    logger.info("Extracting SQL from LLM response that might contain reasoning or formatting.")
     response = llm_response.strip()
     
-    # First, remove <think> blocks entirely
+    logger.info("Removing <think> blocks from response")
     response = re.sub(r'<think>.*?</think>', '', response, flags=re.DOTALL).strip()
     
-    # Remove any non-SQL content at the beginning
-    response = re.sub(r'^[^S]*(?=SELECT|WITH|INSERT|UPDATE|DELETE)', '', response, flags=re.IGNORECASE)
+    logger.info("Removing non-SQL content at the beginning of response")
+    response = re.sub(r'^[^S]*(?=SELECT|WITH|INSERT|UPDATE|DELETE|CASE)', '', response, flags=re.IGNORECASE)
     
-    # Method 1: Look for SQLQuery: pattern
+    logger.info(" [Method 1] Looking for SQLQuery: pattern")
     sql_query_match = re.search(r'SQLQuery:\s*([^;]+;?)', response, re.IGNORECASE | re.DOTALL)
     if sql_query_match:
         sql = sql_query_match.group(1).strip()
         return _clean_sql_query(sql)
     
-    # Method 2: Look for SQL in code blocks
+    logger.info(" [Method 2] Looking for SQL in code blocks")
     code_block_patterns = [
         r'```sql\s*\n(.*?)\n```',
         r'```\s*\n(.*?)\n```',
@@ -37,21 +35,21 @@ def extract_sql_from_response(llm_response: str) -> str:
             if _is_valid_sql_start(sql):
                 return _clean_sql_query(sql)
     
-    # Method 3: Look for standalone SQL statements
-    sql_keywords = ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'WITH']
-    
-    # Split by lines and look for SQL statements
+    logger.info(" [Method 3] Looking for standalone SQL statements")
+    sql_keywords = ['SELECT', 'WITH', 'INSERT', 'UPDATE', 'DELETE', 'CASE']
+
+    logger.info(" - Split by lines and look for SQL statements")
     lines = response.split('\n')
     for line in lines:
         line = line.strip()
         if not line:
             continue
             
-        # Check if line starts with SQL keyword
+        logger.info(f" - Checking line for SQL keywords: {line}")
         if any(line.upper().startswith(keyword.upper()) for keyword in sql_keywords):
             return _clean_sql_query(line)
     
-    # Method 4: Look for multi-line SQL statements
+    logger.info(" [Method 4] Looking for multi-line SQL statements")
     for keyword in sql_keywords:
         pattern = rf'\b{keyword}\b.*?(?=\n\s*\n|\nSQLResult|\nAnswer|$)'
         sql_match = re.search(pattern, response, re.IGNORECASE | re.DOTALL)
@@ -59,23 +57,22 @@ def extract_sql_from_response(llm_response: str) -> str:
             sql = sql_match.group(0).strip()
             return _clean_sql_query(sql)
     
-    # Fallback: if nothing found, return empty string to avoid errors
-    print(f"Warning: Could not extract SQL from response: {response[:100]}...")
-    return "SELECT [-]"  # Safe fallback query
+    logger.info("[Fallback] Could not extract SQL from response, return empty string to avoid errors")
+    logger.warning(f"Could not extract SQL from response: {response[:100]}...")
+    return "SELECT none"  # Safe fallback query
 
-def analyze_sql_error(error_message: str, sql_query: str, table_schema: str) -> str:
-    """
-    Analyze SQL error and provide suggestions for fixing the query.
-    """
+def analyze_sql_error(error_message: str, sql_query: str, table_schema: str, logger) -> str:
+    logger.info("Analyzing SQL error and provide suggestions for fixing the query.")
     error_lower = error_message.lower()
     
+    logger.info("Detected 'no such column' error")
     if "no such column" in error_lower:
-        # Extract the problematic column name
+        logger.info(f"Extracting the problematic column name")
         column_match = re.search(r'no such column:\s*(\w+)', error_lower)
         if column_match:
             bad_column = column_match.group(1)
             
-            # Try to suggest correct column names from schema
+            logger.info("Looking for similar (correct) column names in the schema")
             schema_lower = table_schema.lower()
             possible_columns = re.findall(r'(\w+):', schema_lower)
             
@@ -84,22 +81,22 @@ def analyze_sql_error(error_message: str, sql_query: str, table_schema: str) -> 
                 if bad_column.lower() in col.lower() or col.lower() in bad_column.lower():
                     suggestions.append(col)
             
-            error_msg = f"Column '{bad_column}' does not exist."
+            error_msg = (f"Column '{bad_column}' does not exist.")
             if suggestions:
-                error_msg += f" Did you mean: {', '.join(suggestions[:3])}?"
-            error_msg += f"\n\nAvailable columns from schema:\n{table_schema}"
+                error_msg += (f" Did you mean: {', '.join(suggestions[:3])}?")
+            error_msg += (f"\n\nAvailable columns from schema:\n{table_schema}")
             return error_msg
     
     elif "no such table" in error_lower:
         table_match = re.search(r'no such table:\s*([\w\s\[\]]+)', error_lower)
         if table_match:
             bad_table = table_match.group(1).strip()
-            return f"Table '{bad_table}' does not exist. Available tables from schema:\n{table_schema}"
+            return (f"Table '{bad_table}' does not exist. Available tables from schema:\n{table_schema}")
     
     elif "syntax error" in error_lower:
-        return f"SQL syntax error. Please check:\n- Missing quotes around strings\n- Proper parentheses\n- Correct SQL keywords\n\nFailed query: {sql_query}"
-    
-    return f"SQL execution error: {error_message}\n\nFailed query: {sql_query}\n\nSchema: {table_schema}"
+        return (f"[SQL syntax error]: Please check:\n- Missing quotes around strings\n- Proper parentheses\n- Correct SQL keywords\n\nFailed query: {sql_query}")
+
+    return (f"[SQL execution error]: {error_message}\n\nFailed query: {sql_query}\n\nSchema: {table_schema}")
 
 def create_t2s_prompt(table_schema: str, query_str: str, retry_count: int = 0, error_message: str = ""):
     if retry_count == 0:

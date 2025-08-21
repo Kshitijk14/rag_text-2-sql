@@ -6,7 +6,7 @@ def _is_valid_sql_start(text: str) -> bool:
     if not text:
         return False
     
-    sql_keywords = ['SELECT', 'WITH', 'INSERT', 'UPDATE', 'DELETE']
+    sql_keywords = ['SELECT', 'WITH', 'INSERT', 'UPDATE', 'DELETE', 'CASE']
     text_upper = text.upper().strip()
     return any(text_upper.startswith(keyword) for keyword in sql_keywords)
 
@@ -15,7 +15,7 @@ def _clean_sql_query(sql: str) -> str:
     Clean and standardize SQL query.
     """
     if not sql:
-        return "SELECT 1"
+        return "SELECT none"
     
     # Remove extra whitespace
     sql = ' '.join(sql.split())

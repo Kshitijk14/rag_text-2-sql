@@ -1,28 +1,31 @@
 LOG_PATH: "logs"
 
-LOCAL_DATA_DIR: "data"
+# LOCAL_DATA_DIR: "data"
+# LOCAL_EX1_DATA_PATH: "data/ex1/data.zip"
+# LOCAL_EX1_DATA_FOLDER_DIR: "data/ex1/WikiTableQuestions/csv/200-csv"
+# LOCAL_EX1_DATA_TABLE_INFO_DIR: "data/ex1/WikiTableQuestions_TableInfo"
+# LOCAL_EX1_DATA_TABLE_INDEX_DIR: "data/ex1/table_index_dir"
 
-LOCAL_EX1_DATA_PATH: "data/ex1/data.zip"
-LOCAL_EX1_DATA_FOLDER_DIR: "data/ex1/WikiTableQuestions/csv/200-csv"
-LOCAL_EX1_DATA_TABLE_INFO_DIR: "data/ex1/WikiTableQuestions_TableInfo"
-LOCAL_EX1_DATA_TABLE_INDEX_DIR: "data/ex1/table_index_dir"
+CHINOOK_DBEAVER_DB_PATH: "C:/Users/Hp/AppData/Roaming/DBeaverData/workspace6/.metadata/sample-database-sqlite-1/Chinook.db"
+CHINOOK_TABLE_SUMMARIES_DB_PATH: "db/Chinook_pipeline/sqlite/table_summaries.db"
 
-SQLITE_DB_DIR: "db/sqlite"
-SQLITE_DB_FILE: "db/sqlite/db.sqlite3"
-CHROMA_DB_DIR: "db/chroma_db"
-CHROMA_DB_FILE: "db/chroma_db/chroma.db"
+SQLITE_DB_DIR: "db/Chinook_pipeline/sqlite"
+CHROMA_DB_DIR: "db/Chinook_pipeline/chromadb"
+CHROMA_COLLECTION_NAME: "table_summaries"
 
-WORKFLOW_VISUALIZATION_DIR: "outputs/workflow_visualization"
+WORKFLOW_VISUALIZATION_DIR: "outputs/Chinook_pipeline/workflow_visualization"
 
 
-QUERY_1: "What was the year that The Notorious B.I.G was signed to Bad Boy?"
-QUERY_1_INITIAL: "BIG"
-QUERY_2: "Who won best director in the 1972 academy awards?"
-QUERY_2_INITIAL: "Best_Dir_1972"
+QUERY_TEXT: "What is the billing city of Leonie Köhler?"
+QUERY_TEXT_INITIAL: "LK"
 
 
 TOP_K: 5
+TOP_N: 2
 MAX_RETRIES: 3 # attempts to retry failed requests
+
+CHUNK_SIZE: 1000
+CHUNK_OVERLAP: 100
 
 MODEL_TEMPERATURE: 0.1
 MODEL_REQUEST_TIMEOUT: 480 # seconds
@@ -30,6 +33,10 @@ MODEL_CONTEXT_WINDOW: 8000
 MODEL_OUTPUT_FORMAT: "json"
 MODEL_OUTPUT_FORMAT_JSON: true
 MODEL_THINKING: true
+
+USE_LLM_FOR_SUMMARY: true   # set true to use utils.get_llm_func.llm_func for one-line summaries
+ROWCOUNT_ESTIMATE_LIMIT: null  # e.g., 100000 for very large tables; null to count all
+SUMMARY_STYLE: "one_liner" # "detailed"
 
 
 LOCAL_EMBEDDING_MODEL: "sentence-transformers/all-MiniLM-L6-v2"
