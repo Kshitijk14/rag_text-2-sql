@@ -184,6 +184,7 @@ cython_debug/
 .cursorindexingignore
 
 
+AN_IMPORTANT_SHIT/
 data/
 db/
 results/
