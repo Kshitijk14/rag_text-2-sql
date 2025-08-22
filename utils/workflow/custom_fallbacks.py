@@ -1,5 +1,5 @@
-from ..helpers.other_imports import re
-from .helpers import (
+import re
+from ..helpers.workflow_helpers import (
     _is_valid_sql_start,
     _clean_sql_query,
 )

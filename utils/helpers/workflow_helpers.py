@@ -1,4 +1,4 @@
-from ..helpers.other_imports import re
+import re
 
 
 def _is_valid_sql_start(text: str) -> bool:

@@ -6,7 +6,7 @@ from typing import Dict, List, Any, Optional
 
 from utils.config import CONFIG
 from utils.logger import setup_logger
-from utils.stage_01.schema_helpers import (
+from utils.helpers.schema_helpers import (
     connect_sqlite,
     get_all_table_names,
     get_table_info,

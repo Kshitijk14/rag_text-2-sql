@@ -1,4 +1,4 @@
-from ..helpers.llama_index_imports import Event
+from llama_index.core.workflow.events import Event
 
 
 class TableRetrievedEvent(Event):

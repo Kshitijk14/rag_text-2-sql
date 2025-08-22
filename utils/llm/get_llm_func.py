@@ -1,9 +1,7 @@
 from ..config import CONFIG
-from ..helpers.llama_index_imports import (
-    Settings, 
-    Ollama, 
-    HuggingFaceEmbedding
-)
+from llama_index.core import Settings
+from llama_index.llms.ollama import Ollama
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
 
 LOCAL_EMBEDDING_MODEL = CONFIG["LOCAL_EMBEDDING_MODEL"]
