@@ -14,6 +14,7 @@ QUERY_TEXT_INITIAL: "LK"
 TOP_K: 5
 TOP_N: 2
 MAX_RETRIES: 3 # attempts to retry failed requests
+WORKFLOW_TIMEOUT: 480 # seconds
 
 
 CHUNK_SIZE: 1000

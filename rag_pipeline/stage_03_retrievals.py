@@ -153,17 +153,17 @@ def run_retrievals(
             sql_database, vector_index_dict, query_text, table_schema_objs, top_n, logger
         )
         logger.info(f"Updated table context with rows:\n{table_parser_component}")
-
-        # # Manual memory cleanup
-        # del rows, table_schema_objs, obj_index, obj_retriever, sql_retriever, table_parser_component
-        # gc.collect()
         
         logger.info("--------++++++++Retriever Creation stage successfully completed.")
         logger.info(" ")
         
-        return obj_retriever, sql_retriever, table_parser_component
+        # Manual memory cleanup
+        del rows, table_schema_objs, obj_index, table_parser_component
+        gc.collect()
+        
+        return obj_retriever, sql_retriever
     except Exception as e:
-        logger.error(f"Error at [Stage 01]: {e}")
+        logger.error(f"Error at [Stage 02]: {e}")
         logger.debug(traceback.format_exc())
 
 if __name__ == "__main__":
