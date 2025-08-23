@@ -1,7 +1,20 @@
-import os, argparse, traceback
-from utils.logger import setup_logger
+import os
+import argparse
+import traceback
+import asyncio
+
+import phoenix as px
+from openinference.instrumentation.llama_index import LlamaIndexInstrumentor
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk import trace as trace_sdk
+from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+
 from utils.config import CONFIG
-from rag_pipeline.stage_01_data_prep import run_data_prep
+from utils.logger import setup_logger
+from rag_pipeline.stage_01_data_prep import run_data_preparation
+from rag_pipeline.stage_02_populate_vector_db import run_db_population
+from rag_pipeline.stage_03_retrievals import run_retrievals
+# from rag_pipeline.stage_04_query_workflow import run_text2sql_workflow
 
 
 # configurations & setup logging
@@ -12,9 +25,16 @@ os.makedirs(LOG_DIR, exist_ok=True)  # Create the logs directory if it doesn't e
 LOG_FILE = os.path.join(LOG_DIR, "main.log")
 
 
-def main():
+# initialize llamaindex auto-instrumentation
+endpoint = "http://localhost:6006/v1/traces"
+tracer_provider = trace_sdk.TracerProvider()
+tracer_provider.add_span_processor(SimpleSpanProcessor(OTLPSpanExporter(endpoint)))
+LlamaIndexInstrumentor().instrument(tracer_provider=tracer_provider)
+
+
+async def main():
     logger = setup_logger("main_logger", LOG_FILE)
-    
+
     # Create CLI.
     parser = argparse.ArgumentParser(description="MAIN WORKFLOW")
     # parser.add_argument("--reset", action="store_true", help="Reset DB before population")
@@ -28,7 +48,7 @@ def main():
         try:
             logger.info(" ")
             logger.info("----------STARTING [STAGE 01] DATA PREPARATION----------")
-            run_data_prep()
+            summary_engine, engine = run_data_preparation()
             # logger.info("Already Done. Skipping...")
             logger.info("----------FINISHED [STAGE 01] DATA PREPARATION----------")
             logger.info(" ")
@@ -36,6 +56,44 @@ def main():
             logger.error(f"ERROR RUNNING [STAGE 01] DATA PREPARATION: {e}")
             logger.debug(traceback.format_exc())
             return
+        
+        try:
+            logger.info(" ")
+            logger.info("----------STARTING [STAGE 02] DB POPULATION----------")
+            sql_database, table_node_mapping, vector_index_dict = run_db_population(engine)
+            # logger.info("Already Done. Skipping...")
+            logger.info("----------FINISHED [STAGE 02] DB POPULATION----------")
+            logger.info(" ")
+        except Exception as e:
+            logger.error(f"ERROR RUNNING [STAGE 02] DB POPULATION: {e}")
+            logger.debug(traceback.format_exc())
+            return
+        
+        try:
+            logger.info(" ")
+            logger.info("----------STARTING [STAGE 03] RETRIEVER CREATION----------")
+            obj_retriever, sql_retriever = run_retrievals(
+                summary_engine, engine, sql_database, table_node_mapping, vector_index_dict
+            )
+            # logger.info("Already Done. Skipping...")
+            logger.info("----------FINISHED [STAGE 03] RETRIEVER CREATION----------")
+            logger.info(" ")
+        except Exception as e:
+            logger.error(f"ERROR RUNNING [STAGE 03] RETRIEVER CREATION: {e}")
+            logger.debug(traceback.format_exc())
+            return
+        
+        # try:
+        #     logger.info(" ")
+        #     logger.info("----------STARTING [STAGE 04] TEXT 2 SQL WORKFLOW----------")
+        #     await run_text2sql_workflow(obj_retriever, sql_database, vector_index_dict, sql_retriever)
+        #     # logger.info("Already Done. Skipping...")
+        #     logger.info("----------FINISHED [STAGE 04] TEXT 2 SQL WORKFLOW----------")
+        #     logger.info(" ")
+        # except Exception as e:
+        #     logger.error(f"ERROR RUNNING [STAGE 04] TEXT 2 SQL WORKFLOW: {e}")
+        #     logger.debug(traceback.format_exc())
+        #     return
         
         logger.info("////--//--//----FINISHED [PIPELINE 01] RAG PIPELINE----//--//--////")
         logger.info(" ")
@@ -46,4 +104,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

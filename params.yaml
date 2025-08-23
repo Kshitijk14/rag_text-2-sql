@@ -1,13 +1,10 @@
 LOG_PATH: "logs"
 
-CHINOOK_DBEAVER_DB_PATH: "C:/Users/Hp/AppData/Roaming/DBeaverData/workspace6/.metadata/sample-database-sqlite-1/Chinook.db"
-CHINOOK_TABLE_SUMMARIES_DB_PATH: "db/Chinook_pipeline/sqlite/table_summaries.db"
+CHINOOK_DB_PATH: "C:/Users/Hp/AppData/Roaming/DBeaverData/workspace6/.metadata/sample-database-sqlite-1/Chinook.db"
+CHINOOK_SUMMARIES_DB_PATH: "db/Chinook/sqlite/table_summaries.db"
 
-SQLITE_DB_DIR: "db/Chinook_pipeline/sqlite"
-CHROMA_DB_DIR: "db/Chinook_pipeline/chromadb"
-CHROMA_COLLECTION_NAME: "table_summaries"
-
-WORKFLOW_VISUALIZATION_DIR: "outputs/Chinook_pipeline/workflow_visualization"
+SQLITE_DB_DIR: "db/Chinook/sqlite"
+CHROMA_DB_DIR: "db/Chinook/chromadb"
 
 
 QUERY_TEXT: "What is the billing city of Leonie Köhler?"
@@ -17,9 +14,12 @@ QUERY_TEXT_INITIAL: "LK"
 TOP_K: 5
 TOP_N: 2
 MAX_RETRIES: 3 # attempts to retry failed requests
+WORKFLOW_TIMEOUT: 480 # seconds
+
 
 CHUNK_SIZE: 1000
 CHUNK_OVERLAP: 100
+
 
 MODEL_TEMPERATURE: 0.1
 MODEL_REQUEST_TIMEOUT: 480 # seconds
@@ -27,10 +27,6 @@ MODEL_CONTEXT_WINDOW: 8000
 MODEL_OUTPUT_FORMAT: "json"
 MODEL_OUTPUT_FORMAT_JSON: true
 MODEL_THINKING: true
-
-USE_LLM_FOR_SUMMARY: true   # set true to use utils.get_llm_func.llm_func for one-line summaries
-ROWCOUNT_ESTIMATE_LIMIT: null  # e.g., 100000 for very large tables; null to count all
-SUMMARY_STYLE: "one_liner" # "detailed"
 
 
 LOCAL_EMBEDDING_MODEL: "sentence-transformers/all-MiniLM-L6-v2"

@@ -1,4 +1,5 @@
-from ..helpers.other_imports import re
+import re
+from llama_index.core.llms import ChatResponse
 
 
 def _is_valid_sql_start(text: str) -> bool:
@@ -32,3 +33,20 @@ def _clean_sql_query(sql: str) -> str:
     
     # Don't add semicolon for now since it might be causing issues
     return sql
+
+
+def parse_response_to_sql(response: ChatResponse) -> str:
+    """Parse response into a clean SQL string."""
+    response = response.message.content
+
+    sql_query_start = response.find("SQLQuery:")
+    if sql_query_start != -1:
+        response = response[sql_query_start:]
+        if response.startswith("SQLQuery:"):
+            response = response[len("SQLQuery:") :]
+
+    sql_result_start = response.find("SQLResult:")
+    if sql_result_start != -1:
+        response = response[:sql_result_start]
+
+    return response.strip().strip("```").strip()

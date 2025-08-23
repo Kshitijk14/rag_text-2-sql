@@ -1,5 +1,5 @@
 TABLE_INFO_PROMPT = ("""\
-    Return only a JSON object, with no explanation, no prose, no markdown, and no trailing text.
+    You are an expert data engineer. Return only a JSON object, with no explanation, no prose, no markdown, and no trailing text. Write a 2-3 sentence summary of the given SQL table, describing its purpose and key relationships.
     You are to produce **only** a JSON object matching the following exact schema:
 
     {
@@ -8,7 +8,10 @@ TABLE_INFO_PROMPT = ("""\
     }
 
     Example:
-    {"table_name": "movie_info", "table_summary": "Summary of movie data"}
+    {
+        "table_name": "Album", 
+        "table_summary": "Summary of album and artist data. Table contains albums with titles and artist IDs, with AlbumId as the primary key and ArtistId referencing an artist table."
+    }
 
     Rules:
     - The table_name must be unique to the table, describe it clearly, and be in snake_case.
