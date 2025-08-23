@@ -149,16 +149,16 @@ def run_retrievals(
 
         obj_retriever, sql_retriever = create_retrievers(sql_database, obj_index, top_k, logger)
         
-        table_parser_component = get_table_context_and_rows_str(
-            sql_database, vector_index_dict, query_text, table_schema_objs, top_n, logger
-        )
-        logger.info(f"Updated table context with rows:\n{table_parser_component}")
+        # table_parser_component = get_table_context_and_rows_str(
+        #     sql_database, vector_index_dict, query_text, table_schema_objs, top_n, logger
+        # )
+        # logger.info(f"Updated table context with rows:\n{table_parser_component}")
         
         logger.info("--------++++++++Retriever Creation stage successfully completed.")
         logger.info(" ")
         
         # Manual memory cleanup
-        del rows, table_schema_objs, obj_index, table_parser_component
+        del rows, table_schema_objs, obj_index
         gc.collect()
         
         return obj_retriever, sql_retriever

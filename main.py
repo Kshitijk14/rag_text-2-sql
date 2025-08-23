@@ -14,7 +14,7 @@ from utils.logger import setup_logger
 from rag_pipeline.stage_01_data_prep import run_data_preparation
 from rag_pipeline.stage_02_populate_vector_db import run_db_population
 from rag_pipeline.stage_03_retrievals import run_retrievals
-from rag_pipeline.stage_04_query_workflow import run_text2sql_workflow
+# from rag_pipeline.stage_04_query_workflow import run_text2sql_workflow
 
 
 # configurations & setup logging
