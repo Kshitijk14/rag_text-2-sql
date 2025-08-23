@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "arize-phoenix[evals]>=11.24.1",
+    "arize-phoenix[evals]>=11.26.0",
     "chromadb>=1.0.17",
     "huggingface-hub[hf-xet]>=0.34.4",
     "llama-index>=0.13.2",

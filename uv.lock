@@ -116,7 +116,7 @@ wheels = [
 
 [[package]]
 name = "arize-phoenix"
-version = "11.24.1"
+version = "11.26.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aioitertools" },
@@ -160,9 +160,9 @@ dependencies = [
     { name = "uvicorn" },
     { name = "wrapt" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f3/89/ceb32bbdbbb44d5e1324c569160bcd1992115755bf3d5f6ccb27112871bc/arize_phoenix-11.24.1.tar.gz", hash = "sha256:3e27b6f5f49d24c4c9ea1e3968d513251a861506e70f5f8f75c4e07acaefe9fe", size = 2202168, upload-time = "2025-08-15T20:17:16.771Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/92/7b/79421a9802f4a9b7d7b04cea3bb8a47a9794f0ee62c306f4da418eafa9c4/arize_phoenix-11.26.0.tar.gz", hash = "sha256:f60095a4d6c0bd7193a228929a0c7467b8444494f1d6b249c74d3e53ca2b58c3", size = 2207792, upload-time = "2025-08-22T20:02:28.235Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e5/73/bbd4cce6f6a4ff9a19fcb99d17d8dde94bac895f1caceb003fecbff26375/arize_phoenix-11.24.1-py3-none-any.whl", hash = "sha256:3f059d543c4ce2d675fde9c177e3363a50a0c9afae38e9f701f3b66993f3cbd0", size = 2398012, upload-time = "2025-08-15T20:17:13.155Z" },
+    { url = "https://files.pythonhosted.org/packages/6c/2b/5e5c0f993a443fcdb9a7eed52c6f17e8e6f0f618c7b45d49efedec7a490b/arize_phoenix-11.26.0-py3-none-any.whl", hash = "sha256:dd6588675881b732fdca7c0360cd3bcc44f6affd49570156513552187bb309cf", size = 2403385, upload-time = "2025-08-22T20:02:25.785Z" },
 ]
 
 [[package]]
@@ -184,17 +184,19 @@ wheels = [
 
 [[package]]
 name = "arize-phoenix-evals"
-version = "0.27.0"
+version = "0.28.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "glom" },
     { name = "pandas" },
+    { name = "pydantic" },
     { name = "pystache" },
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/30/8f/3096dbb74ea796e9d868aa11269b688162f445afb56d670c13bd9c7d4e6d/arize_phoenix_evals-0.27.0.tar.gz", hash = "sha256:e2838e45b620a316293df46502d9d7b7b7ab4353939e48baa18cfe678be7962a", size = 77293, upload-time = "2025-08-13T15:20:35.738Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d8/66/2ad43697432393a0f14e908079c42819a0c6c7963792299e6e76d2d6dc3c/arize_phoenix_evals-0.28.1.tar.gz", hash = "sha256:744945ce1515da5a5e23a9e49a1f006ab0c9dcc733db6559fecf4e6ef977a5c1", size = 81868, upload-time = "2025-08-20T17:20:15.807Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fd/b5/4549cb087cfa0865f30a5680a6a12e4f509f24e1ad739a00a1a47c1783bf/arize_phoenix_evals-0.27.0-py3-none-any.whl", hash = "sha256:b5110a9688c8c9993c8427ecfadf1dead06aeb03b56060a19e42e52c7f5212c5", size = 105443, upload-time = "2025-08-13T15:20:34.269Z" },
+    { url = "https://files.pythonhosted.org/packages/fd/fb/a612c88b04da70c5cf1add783fbbb0ff24581c35208ed7a81a39aaf88fc8/arize_phoenix_evals-0.28.1-py3-none-any.whl", hash = "sha256:55f8174c15cd848ad1cc528245f62c47cbeef4960066b69f72ef8e6f1c694e77", size = 110265, upload-time = "2025-08-20T17:20:14.318Z" },
 ]
 
 [[package]]
@@ -236,14 +238,14 @@ wheels = [
 
 [[package]]
 name = "authlib"
-version = "1.6.1"
+version = "1.6.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8e/a1/d8d1c6f8bc922c0b87ae0d933a8ed57be1bef6970894ed79c2852a153cd3/authlib-1.6.1.tar.gz", hash = "sha256:4dffdbb1460ba6ec8c17981a4c67af7d8af131231b5a36a88a1e8c80c111cdfd", size = 159988, upload-time = "2025-07-20T07:38:42.834Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8a/95/e4f4ab5ce465821fe2229e10985ab80462941fe5d96387ae76bafd36f0ba/authlib-1.6.2.tar.gz", hash = "sha256:3bde83ac0392683eeef589cd5ab97e63cbe859e552dd75dca010548e79202cb1", size = 160429, upload-time = "2025-08-23T08:34:32.665Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f9/58/cc6a08053f822f98f334d38a27687b69c6655fb05cd74a7a5e70a2aeed95/authlib-1.6.1-py2.py3-none-any.whl", hash = "sha256:e9d2031c34c6309373ab845afc24168fe9e93dc52d252631f52642f21f5ed06e", size = 239299, upload-time = "2025-07-20T07:38:39.259Z" },
+    { url = "https://files.pythonhosted.org/packages/f4/00/fb65909bf4c8d7da893a12006074343402a8dc8c00d916b3cee524d97f3f/authlib-1.6.2-py2.py3-none-any.whl", hash = "sha256:2dd5571013cacf6b15f7addce03ed057ffdf629e9e81bacd9c08455a190e9b57", size = 239601, upload-time = "2025-08-23T08:34:31.4Z" },
 ]
 
 [[package]]
@@ -332,6 +334,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/d8/e4/0c4c39e18fd76d6a628d4dd8da40543d136ce2d1752bd6eeeab0791f4d6b/beautifulsoup4-4.13.4.tar.gz", hash = "sha256:dbb3c4e1ceae6aefebdaf2423247260cd062430a410e38c66f2baa50a8437195", size = 621067, upload-time = "2025-04-15T17:05:13.836Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/50/cd/30110dc0ffcf3b131156077b90e9f60ed75711223f306da4db08eff8403b/beautifulsoup4-4.13.4-py3-none-any.whl", hash = "sha256:9bbbb14bfde9d79f38b8cd5f8c7c85f4b8f2523190ebed90e950a8dea4cb1c4b", size = 187285, upload-time = "2025-04-15T17:05:12.221Z" },
+]
+
+[[package]]
+name = "boltons"
+version = "25.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/63/54/71a94d8e02da9a865587fb3fff100cb0fc7aa9f4d5ed9ed3a591216ddcc7/boltons-25.0.0.tar.gz", hash = "sha256:e110fbdc30b7b9868cb604e3f71d4722dd8f4dcb4a5ddd06028ba8f1ab0b5ace", size = 246294, upload-time = "2025-02-03T05:57:59.129Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/45/7f/0e961cf3908bc4c1c3e027de2794f867c6c89fb4916fc7dba295a0e80a2d/boltons-25.0.0-py3-none-any.whl", hash = "sha256:dc9fb38bf28985715497d1b54d00b62ea866eca3938938ea9043e254a3a6ca62", size = 194210, upload-time = "2025-02-03T05:57:56.705Z" },
 ]
 
 [[package]]
@@ -695,6 +706,18 @@ wheels = [
 ]
 
 [[package]]
+name = "face"
+version = "24.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "boltons" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ac/79/2484075a8549cd64beae697a8f664dee69a5ccf3a7439ee40c8f93c1978a/face-24.0.0.tar.gz", hash = "sha256:611e29a01ac5970f0077f9c577e746d48c082588b411b33a0dd55c4d872949f6", size = 62732, upload-time = "2024-11-02T05:24:26.095Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e9/47/21867c2e5fd006c8d36a560df9e32cb4f1f566b20c5dd41f5f8a2124f7de/face-24.0.0-py3-none-any.whl", hash = "sha256:0e2c17b426fa4639a4e77d1de9580f74a98f4869ba4c7c8c175b810611622cd3", size = 54742, upload-time = "2024-11-02T05:24:24.939Z" },
+]
+
+[[package]]
 name = "fastapi"
 version = "0.116.1"
 source = { registry = "https://pypi.org/simple" }
@@ -818,6 +841,20 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/8b/02/0835e6ab9cfc03916fe3f78c0956cfcdb6ff2669ffa6651065d5ebf7fc98/fsspec-2025.7.0.tar.gz", hash = "sha256:786120687ffa54b8283d942929540d8bc5ccfa820deb555a2b5d0ed2b737bf58", size = 304432, upload-time = "2025-07-15T16:05:21.19Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2f/e0/014d5d9d7a4564cf1c40b5039bc882db69fd881111e03ab3657ac0b218e2/fsspec-2025.7.0-py3-none-any.whl", hash = "sha256:8b012e39f63c7d5f10474de957f3ab793b47b45ae7d39f2fb735f8bbe25c0e21", size = 199597, upload-time = "2025-07-15T16:05:19.529Z" },
+]
+
+[[package]]
+name = "glom"
+version = "24.11.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "attrs" },
+    { name = "boltons" },
+    { name = "face" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/05/89/b57cfbc448189426f2e01b244fbe9226b059ef5423a9d49c1d335a1f1026/glom-24.11.0.tar.gz", hash = "sha256:4325f96759a912044af7b6c6bd0dba44ad8c1eb6038aab057329661d2021bb27", size = 195120, upload-time = "2024-11-02T23:17:50.405Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9c/a2/75fd80784ec33da8d39cf885e8811a4fbc045a90db5e336b8e345e66dbb2/glom-24.11.0-py3-none-any.whl", hash = "sha256:991db7fcb4bfa9687010aa519b7b541bbe21111e70e58fdd2d7e34bbaa2c1fbd", size = 102690, upload-time = "2024-11-02T23:17:46.468Z" },
 ]
 
 [[package]]
@@ -2947,7 +2984,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "arize-phoenix", extras = ["evals"], specifier = ">=11.24.1" },
+    { name = "arize-phoenix", extras = ["evals"], specifier = ">=11.26.0" },
     { name = "chromadb", specifier = ">=1.0.17" },
     { name = "huggingface-hub", extras = ["hf-xet"], specifier = ">=0.34.4" },
     { name = "llama-index", specifier = ">=0.13.2" },

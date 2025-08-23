@@ -12,7 +12,7 @@ def setup_logger(name, log_file):
         fh = logging.FileHandler(log_file, encoding='utf-8')
         fh.setFormatter(formatter)
         
-        # sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')  # Force UTF-8 console output
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')  # Force UTF-8 console output
         ch = logging.StreamHandler(sys.stdout)
         
         ch.setFormatter(formatter)

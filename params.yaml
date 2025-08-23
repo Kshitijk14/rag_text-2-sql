@@ -27,10 +27,6 @@ MODEL_OUTPUT_FORMAT: "json"
 MODEL_OUTPUT_FORMAT_JSON: true
 MODEL_THINKING: true
 
-USE_LLM_FOR_SUMMARY: true   # set true to use utils.get_llm_func.llm_func for one-line summaries
-ROWCOUNT_ESTIMATE_LIMIT: null  # e.g., 100000 for very large tables; null to count all
-SUMMARY_STYLE: "one_liner" # "detailed"
-
 
 LOCAL_EMBEDDING_MODEL: "sentence-transformers/all-MiniLM-L6-v2"
 LOCAL_LLM_MODEL: "qwen3:0.6b"
