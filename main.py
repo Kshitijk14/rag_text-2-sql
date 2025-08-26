@@ -36,7 +36,8 @@ async def main():
 
     # Create CLI.
     parser = argparse.ArgumentParser(description="MAIN WORKFLOW")
-    # parser.add_argument("--reset", action="store_true", help="Reset DB before population")
+    parser.add_argument("--clear", action="store_true", help="Clear Summary DB")
+    parser.add_argument("--reset", action="store_true", help="Reset Vector DB before population")
     # parser.add_argument("query_text", type=str, help="The query text.")
     args = parser.parse_args()
     
@@ -47,7 +48,7 @@ async def main():
         try:
             logger.info(" ")
             logger.info("----------STARTING [STAGE 01] DATA PREPARATION----------")
-            summary_engine, engine = run_data_preparation()
+            summary_engine, engine = run_data_preparation(args.clear)
             # logger.info("Already Done. Skipping...")
             logger.info("----------FINISHED [STAGE 01] DATA PREPARATION----------")
             logger.info(" ")
@@ -59,7 +60,7 @@ async def main():
         try:
             logger.info(" ")
             logger.info("----------STARTING [STAGE 02] DB POPULATION----------")
-            sql_database, table_node_mapping, vector_index_dict = run_db_population(engine)
+            sql_database, table_node_mapping, vector_index_dict = run_db_population(engine, args.reset)
             # logger.info("Already Done. Skipping...")
             logger.info("----------FINISHED [STAGE 02] DB POPULATION----------")
             logger.info(" ")

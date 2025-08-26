@@ -6,10 +6,8 @@ import asyncio
 from pathlib import Path
 from typing import List, Dict
 
-from llama_index.core.objects import SQLTableSchema
-from utils.helpers.common import TableInfo
-
 from llama_index.core import Settings
+from llama_index.core.objects import SQLTableSchema
 from llama_index.core.workflow import (
     Workflow, 
     step, 
@@ -20,6 +18,7 @@ from llama_index.core.workflow import (
 from utils.config import CONFIG
 from utils.logger import setup_logger
 
+from utils.helpers.common import TableInfo
 from utils.helpers.retriever_helpers import (
     build_object_index,
     create_retrievers
@@ -46,6 +45,7 @@ from utils.workflow.custom_fallbacks import (
     create_t2s_prompt,
 )
 from utils.helpers.workflow_helpers import parse_response_to_sql
+from utils.llm.get_llm_func import get_llm_func
 
 
 # configs
@@ -127,13 +127,14 @@ def get_table_context_and_rows_str(sql_database, vector_index_dict, query_str: s
 
 
 class Text2SQLWorkflow(Workflow):
-    def __init__(self, obj_retriever, sql_database, vector_index_dict, sql_retriever, top_n, response_synthesis_prompt, logger):
+    def __init__(self, obj_retriever, sql_database, vector_index_dict, sql_retriever, top_n, llm, response_synthesis_prompt, logger):
         super().__init__()
         self.obj_retriever = obj_retriever
         self.sql_database = sql_database
         self.vector_index_dict = vector_index_dict
         self.sql_retriever = sql_retriever
         self.top_n = top_n
+        self.llm = llm
         self.response_synthesis_prompt = response_synthesis_prompt
         self.logger = logger
     
@@ -165,7 +166,7 @@ class Text2SQLWorkflow(Workflow):
             self.top_n,
             self.logger
             )
-        
+
         return SchemaProcessedEvent(
             table_schema=schema_str, 
             query_str=ev.query_str
@@ -314,7 +315,8 @@ async def run_text2sql_workflow(
     sql_database, 
     table_node_mapping, 
     vector_index_dict, 
-    sqlite_db_dir=SQLITE_DB_DIR, 
+    sqlite_db_dir=SQLITE_DB_DIR,
+    main_db_dir=CHINOOK_DB_PATH,
     top_k=TOP_K, 
     top_n=TOP_N, 
     response_synthesis_prompt: str = RESPONSE_SYNTHESIS_PROMPT, 
@@ -353,11 +355,14 @@ async def run_text2sql_workflow(
             logger.info(" ")
             logger.info("--------++++++++Starting Query Workflow stage.....")
             
-            workflow = Text2SQLWorkflow(obj_retriever, sql_database, vector_index_dict, sql_retriever, top_n, response_synthesis_prompt, logger)
+            local_model = get_llm_func()
+            workflow = Text2SQLWorkflow(obj_retriever, sql_database, vector_index_dict, sql_retriever, top_n, local_model, response_synthesis_prompt, logger)
+            
             result = await asyncio.wait_for(
                     workflow.run(query=query_text), 
                     timeout=workflow_timeout
                 )
+            logger.info(f"Stage 03 completed. Final Result:\n{result}")
             
             print(result)
 
@@ -369,7 +374,7 @@ async def run_text2sql_workflow(
 
         finally:
             # Manual memory cleanup
-            del workflow
+            del summary_engine, engine, sql_database, table_node_mapping, vector_index_dict, rows, table_schema_objs, obj_index, obj_retriever, sql_retriever
             gc.collect()
         
         return result
