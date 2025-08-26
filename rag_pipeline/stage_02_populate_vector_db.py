@@ -1,4 +1,5 @@
 import os
+import shutil
 import traceback
 
 import chromadb
@@ -24,11 +25,8 @@ from utils.helpers.population_helpers import (
 
 # configs
 LOG_PATH = Path(CONFIG["LOG_PATH"])
-CHINOOK_DB_PATH = Path(CONFIG["CHINOOK_DB_PATH"])
-SQLITE_DB_DIR = Path(CONFIG["SQLITE_DB_DIR"])
 CHROMA_DB_DIR = Path(CONFIG["CHROMA_DB_DIR"])
 MAX_RETRIES = CONFIG["MAX_RETRIES"]
-TOP_K = CONFIG["TOP_K"]
 
 # logger
 LOG_DIR = os.path.join(os.getcwd(), str(LOG_PATH))
@@ -77,14 +75,25 @@ def index_all_tables_with_chroma(sql_database, chroma_db_dir: str, logger) -> Di
     return vector_index_dict
 
 
+def clear_vector_database(chroma_db_dir):
+    if os.path.exists(chroma_db_dir):
+        shutil.rmtree(chroma_db_dir)
+
+
 def run_db_population(
-    engine, 
-    chroma_db_dir=CHROMA_DB_DIR
+    engine,
+    reset=False, 
+    chroma_db_dir: Path= CHROMA_DB_DIR,
 ):
     
     logger = setup_logger("vector_db_population_logger", LOG_FILE)
     logger.info(" ")
     logger.info("--------++++++++Starting DB Population stage.....")
+    
+    if reset:
+            logger.info("[Stage 01, Part 00.1] (RESET DB) Clearing the vector db...")
+            clear_vector_database(chroma_db_dir)
+            logger.info("[Stage 01, Part 00.1] (RESET DB) Vector db cleared successfully.")
 
     try:
         sql_database, table_node_mapping = wrap_sql_engine(engine, logger)
