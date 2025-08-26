@@ -108,7 +108,7 @@ def get_table_context_and_rows_str(sql_database, vector_index_dict, query_str: s
             )
             
             relevant_nodes = vector_retriever.retrieve(query_str)
-            logger.info(f"[02] Retrieved {len(relevant_nodes)} relevant nodes for table: {table_name}")
+            logger.info(f"[02] Retrieved {len(relevant_nodes)} relevant rows for table: {table_name}")
             
             if relevant_nodes:
                 row_context = "\nHere are some relevant example rows (column=value):\n"
@@ -316,7 +316,6 @@ async def run_text2sql_workflow(
     table_node_mapping, 
     vector_index_dict, 
     sqlite_db_dir=SQLITE_DB_DIR,
-    main_db_dir=CHINOOK_DB_PATH,
     top_k=TOP_K, 
     top_n=TOP_N, 
     response_synthesis_prompt: str = RESPONSE_SYNTHESIS_PROMPT, 
