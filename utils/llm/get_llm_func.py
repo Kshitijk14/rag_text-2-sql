@@ -1,3 +1,4 @@
+import os
 from ..config import CONFIG
 from llama_index.core import Settings
 from llama_index.llms.ollama import Ollama
