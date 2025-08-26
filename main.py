@@ -13,8 +13,7 @@ from utils.config import CONFIG
 from utils.logger import setup_logger
 from rag_pipeline.stage_01_data_prep import run_data_preparation
 from rag_pipeline.stage_02_populate_vector_db import run_db_population
-from rag_pipeline.stage_03_retrievals import run_retrievals
-# from rag_pipeline.stage_04_query_workflow import run_text2sql_workflow
+from rag_pipeline.stage_03_query_workflow import run_text2sql_workflow
 
 
 # configurations & setup logging
@@ -71,29 +70,15 @@ async def main():
         
         try:
             logger.info(" ")
-            logger.info("----------STARTING [STAGE 03] RETRIEVER CREATION----------")
-            obj_retriever, sql_retriever = run_retrievals(
-                summary_engine, engine, sql_database, table_node_mapping, vector_index_dict
-            )
+            logger.info("----------STARTING [STAGE 03] TEXT 2 SQL WORKFLOW----------")
+            await run_text2sql_workflow(summary_engine, engine, sql_database, table_node_mapping, vector_index_dict)
             # logger.info("Already Done. Skipping...")
-            logger.info("----------FINISHED [STAGE 03] RETRIEVER CREATION----------")
+            logger.info("----------FINISHED [STAGE 03] TEXT 2 SQL WORKFLOW----------")
             logger.info(" ")
         except Exception as e:
-            logger.error(f"ERROR RUNNING [STAGE 03] RETRIEVER CREATION: {e}")
+            logger.error(f"ERROR RUNNING [STAGE 03] TEXT 2 SQL WORKFLOW: {e}")
             logger.debug(traceback.format_exc())
             return
-        
-        # try:
-        #     logger.info(" ")
-        #     logger.info("----------STARTING [STAGE 04] TEXT 2 SQL WORKFLOW----------")
-        #     await run_text2sql_workflow(obj_retriever, sql_database, vector_index_dict, sql_retriever)
-        #     # logger.info("Already Done. Skipping...")
-        #     logger.info("----------FINISHED [STAGE 04] TEXT 2 SQL WORKFLOW----------")
-        #     logger.info(" ")
-        # except Exception as e:
-        #     logger.error(f"ERROR RUNNING [STAGE 04] TEXT 2 SQL WORKFLOW: {e}")
-        #     logger.debug(traceback.format_exc())
-        #     return
         
         logger.info("////--//--//----FINISHED [PIPELINE 01] RAG PIPELINE----//--//--////")
         logger.info(" ")
