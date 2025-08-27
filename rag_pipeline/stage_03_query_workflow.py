@@ -19,9 +19,10 @@ from utils.config import CONFIG
 from utils.logger import setup_logger
 
 from utils.helpers.common import TableInfo
-from utils.helpers.retriever_helpers import (
-    build_object_index,
-    create_retrievers
+from utils.helpers.common import (
+    prep_db_engine, 
+    prep_summary_engine, 
+    wrap_sql_engine
 )
 from utils.helpers.summary_helpers import (
     load_summaries_from_sqlite,
@@ -29,6 +30,11 @@ from utils.helpers.summary_helpers import (
     load_summaries_from_json,
     filter_valid_summaries_from_json
 )
+from utils.helpers.retriever_helpers import (
+    build_object_index,
+    create_retrievers
+)
+from utils.populate.custom_index_load import load_all_indexes_from_chroma
 from utils.llm.get_prompt_temp import RESPONSE_SYNTHESIS_PROMPT
 from utils.workflow.custom_events import (
     TableRetrievedEvent,
@@ -321,15 +327,12 @@ class Text2SQLWorkflow(Workflow):
         return StopEvent(result=str(answer))
 
 
-async def run_text2sql_workflow(
-    summary_engine, 
-    engine, 
-    sql_database, 
-    table_node_mapping, 
-    vector_index_dict, 
-    sqlite_db_dir=SQLITE_DB_DIR,
-    top_k=TOP_K, 
-    top_n=TOP_N, 
+async def run_text2sql_workflow( 
+    main_db_dir: Path = CHINOOK_DB_PATH, 
+    sqlite_db_dir: Path = SQLITE_DB_DIR,
+    chroma_db_dir: Path= CHROMA_DB_DIR,
+    top_k: int = TOP_K, 
+    top_n: int = TOP_N, 
     response_synthesis_prompt: str = RESPONSE_SYNTHESIS_PROMPT, 
     workflow_timeout: float = WORKFLOW_TIMEOUT,
     query_text: str = QUERY_TEXT
@@ -339,24 +342,34 @@ async def run_text2sql_workflow(
     try:
         try:
             logger.info(" ")
-            logger.info("--------++++++++Starting Retrieval sub-stage.....")
-            
+            logger.info("--------++++++++Starting Retrieval Creation sub-stage.....")
+
+            logger.info("Preparing database connections...")
+            engine, _ = prep_db_engine(main_db_dir, logger)
+            summary_engine, _ = prep_summary_engine(sqlite_db_dir, logger)
+
+            logger.info("Loading and filtering table summaries...")
             # rows = load_summaries_from_sqlite(summary_engine, logger)
             # table_schema_objs = filter_valid_summaries(rows, engine, logger)
-
+            
             rows = load_summaries_from_json(sqlite_db_dir, logger)
             table_schema_objs = filter_valid_summaries_from_json(rows, engine, logger)
 
+            logger.info("Wrapping SQL database and table node mapping...")
+            sql_database, table_node_mapping = wrap_sql_engine(engine, logger)
+
+            logger.info("Building object index from table summaries...")
             obj_index = build_object_index(table_schema_objs, table_node_mapping, logger)
 
+            logger.info("Creating retrievers...")
             obj_retriever, sql_retriever = create_retrievers(sql_database, obj_index, top_k, logger)
-            
-            # table_parser_component = get_table_context_and_rows_str(
-            #     sql_database, vector_index_dict, query_text, table_schema_objs, top_n, logger
-            # )
+
+            vector_index_dict = load_all_indexes_from_chroma(chroma_db_dir, logger)
+
+            # table_parser_component = get_table_context_and_rows_str(sql_database, vector_index_dict, query_text, table_schema_objs, top_n, logger)
             # logger.info(f"Updated table context with rows:\n{table_parser_component}")
             
-            logger.info("--------++++++++Retrieval sub-stage successfully completed.")
+            logger.info("--------++++++++Retrieval Creation sub-stage successfully completed.")
             logger.info(" ")
         except Exception as e:
             logger.error(f"Error at retrieval sub-stage: {e}")
@@ -369,10 +382,6 @@ async def run_text2sql_workflow(
             local_model = get_llm_func()
             workflow = Text2SQLWorkflow(obj_retriever, sql_database, vector_index_dict, sql_retriever, top_n, local_model, response_synthesis_prompt, logger)
             
-            # result = await asyncio.wait_for(
-            #         workflow.run(query=query_text), 
-            #         timeout=workflow_timeout
-            #     )
             result = await workflow.run(query=query_text, timeout=workflow_timeout)
             logger.info(f"Stage 03 completed. Final Result:\n{result}")
             
@@ -386,10 +395,22 @@ async def run_text2sql_workflow(
 
         finally:
             # Manual memory cleanup
-            del summary_engine, engine, sql_database, table_node_mapping, vector_index_dict, rows, table_schema_objs, obj_index, obj_retriever, sql_retriever
-            gc.collect()
-        
-        return result
+            logger.info("Cleaning up resources...")
+            del (
+                engine, summary_engine, 
+                rows, table_schema_objs,
+                sql_database, table_node_mapping,
+                obj_index, obj_retriever, sql_retriever,
+                vector_index_dict,
+                local_model,
+                workflow,
+                result
+            )
+            gc.collect()        
     except Exception as e:
         logger.error(f"Error at [Stage 03]: {e}")
         logger.debug(traceback.format_exc())
+
+
+if __name__ == "__main__":
+    asyncio.run(run_text2sql_workflow())

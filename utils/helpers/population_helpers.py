@@ -1,3 +1,4 @@
+import chromadb
 from sqlalchemy import text
 
 from llama_index.core import VectorStoreIndex
@@ -7,11 +8,17 @@ from llama_index.vector_stores.chroma import ChromaVectorStore
 
 from utils.llm.get_llm_func import get_embedding_func
 
+def create_chroma_client(chroma_db_dir: str, logger):
+    """Create a persistent ChromaDB client."""
+    logger.info(f"[00] Creating persistent Chroma client at: {chroma_db_dir}")
+    chroma_client = chromadb.PersistentClient(path=chroma_db_dir)
+    return chroma_client
 
 def get_chroma_collection(chroma_client, table_name, logger):
     """Get or create a persistent ChromaDB collection for the given table."""
     logger.info(f"[01] Processing table: {table_name}")
-    return chroma_client.get_or_create_collection(name=f"table_{table_name}")
+    collection = chroma_client.get_or_create_collection(name=f"table_{table_name}")
+    return collection
 
 
 def fetch_table_rows(engine, table_name, logger):
@@ -62,8 +69,10 @@ def update_index(collection, new_nodes):
         )
 
     # Always rebuild view
-    return VectorStoreIndex.from_vector_store(
+    index = VectorStoreIndex.from_vector_store(
         vector_store=vector_store,
         storage_context=storage_context,
         embed_model=get_embedding_func()
     )
+    
+    return index

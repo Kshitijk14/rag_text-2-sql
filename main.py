@@ -11,8 +11,8 @@ from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 
 from utils.config import CONFIG
 from utils.logger import setup_logger
-from rag_pipeline.stage_01_data_prep import run_data_preparation
-from rag_pipeline.stage_02_populate_vector_db import run_db_population
+# from rag_pipeline.stage_01_data_prep import run_data_preparation
+# from rag_pipeline.stage_02_populate_vector_db import run_db_population
 from rag_pipeline.stage_03_query_workflow import run_text2sql_workflow
 
 
@@ -48,8 +48,8 @@ async def main():
         try:
             logger.info(" ")
             logger.info("----------STARTING [STAGE 01] DATA PREPARATION----------")
-            summary_engine, engine = run_data_preparation(args.clear)
-            # logger.info("Already Done. Skipping...")
+            # run_data_preparation(args.clear)
+            logger.info("Already Done. Skipping...")
             logger.info("----------FINISHED [STAGE 01] DATA PREPARATION----------")
             logger.info(" ")
         except Exception as e:
@@ -60,8 +60,8 @@ async def main():
         try:
             logger.info(" ")
             logger.info("----------STARTING [STAGE 02] DB POPULATION----------")
-            sql_database, table_node_mapping, vector_index_dict = run_db_population(engine, args.reset)
-            # logger.info("Already Done. Skipping...")
+            # run_db_population(args.reset)
+            logger.info("Already Done. Skipping...")
             logger.info("----------FINISHED [STAGE 02] DB POPULATION----------")
             logger.info(" ")
         except Exception as e:
@@ -72,7 +72,7 @@ async def main():
         try:
             logger.info(" ")
             logger.info("----------STARTING [STAGE 03] TEXT 2 SQL WORKFLOW----------")
-            await run_text2sql_workflow(summary_engine, engine, sql_database, table_node_mapping, vector_index_dict)
+            await run_text2sql_workflow()
             # logger.info("Already Done. Skipping...")
             logger.info("----------FINISHED [STAGE 03] TEXT 2 SQL WORKFLOW----------")
             logger.info(" ")
