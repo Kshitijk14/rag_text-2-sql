@@ -50,7 +50,7 @@ from utils.workflow.custom_fallbacks import (
     analyze_sql_error,
     create_t2s_prompt,
 )
-from utils.helpers.workflow_helpers import parse_response_to_sql
+from utils.helpers.workflow_helpers import parse_response_to_sql, parse_llm_json
 from utils.llm.get_llm_func import get_llm_func
 
 
@@ -64,6 +64,7 @@ TOP_K = CONFIG["TOP_K"]
 TOP_N = CONFIG["TOP_N"]
 WORKFLOW_TIMEOUT = CONFIG["WORKFLOW_TIMEOUT"]
 QUERY_TEXT = CONFIG["QUERY_TEXT"]
+FINAL_ANSWER_FORMAT = CONFIG["FINAL_ANSWER_FORMAT"]
 
 # logger
 LOG_DIR = os.path.join(os.getcwd(), str(LOG_PATH))
@@ -133,7 +134,7 @@ def get_table_context_and_rows_str(sql_database, vector_index_dict, query_str: s
 
 
 class Text2SQLWorkflow(Workflow):
-    def __init__(self, obj_retriever, sql_database, vector_index_dict, sql_retriever, top_n, local_model, response_synthesis_prompt, logger):
+    def __init__(self, obj_retriever, sql_database, vector_index_dict, sql_retriever, top_n, local_model, final_result_format, response_synthesis_prompt, logger):
         super().__init__()
         self.obj_retriever = obj_retriever
         self.sql_database = sql_database
@@ -142,6 +143,7 @@ class Text2SQLWorkflow(Workflow):
         self.top_n = top_n
         self.local_model = local_model
         self.response_synthesis_prompt = response_synthesis_prompt
+        self.final_result_format = final_result_format
         self.logger = logger
     
 
@@ -293,6 +295,7 @@ class Text2SQLWorkflow(Workflow):
     async def retry_handler_step(self, ev: SQLResultsEvent) -> SQLPromptReadyEvent:
         self.logger.info(f"[Step 07] Handling retry for query: {ev.query_str}")
         if ev.success:
+            self.logger.info(f"[Step 07] Success detected, skipping retries for query: {ev.query_str}")
             return None
         
         return SQLPromptReadyEvent(
@@ -308,6 +311,7 @@ class Text2SQLWorkflow(Workflow):
         self.logger.info(f"[Step 08] Preparing synthesis prompt for query: {ev.query_str}")
         if not ev.success:
             return None
+
         prompt = self.response_synthesis_prompt.format(
             query_str=ev.query_str,
             context_str=ev.context_str,
@@ -322,9 +326,10 @@ class Text2SQLWorkflow(Workflow):
     @step
     async def response_synthesis_llm_step(self, ev: ResponsePromptReadyEvent) -> StopEvent:
         self.logger.info(f"[Step 09] Generating final answer for query: {ev.query_str}")
-        answer = await self.local_model.acomplete(ev.rs_prompt)
+        raw_answer = await self.local_model.acomplete(ev.rs_prompt)
         
-        return StopEvent(result=str(answer))
+        final_result = parse_llm_json(raw_answer, self.logger, mode=self.final_result_format)
+        return StopEvent(result=final_result)
 
 
 async def run_text2sql_workflow( 
@@ -335,7 +340,8 @@ async def run_text2sql_workflow(
     top_n: int = TOP_N, 
     response_synthesis_prompt: str = RESPONSE_SYNTHESIS_PROMPT, 
     workflow_timeout: float = WORKFLOW_TIMEOUT,
-    query_text: str = QUERY_TEXT
+    query_text: str = QUERY_TEXT,
+    final_result_format: str = FINAL_ANSWER_FORMAT
 ):
     logger = setup_logger("workflow_logger", LOG_FILE)
 
@@ -380,7 +386,7 @@ async def run_text2sql_workflow(
             logger.info("--------++++++++Starting Query Workflow stage.....")
             
             local_model = get_llm_func()
-            workflow = Text2SQLWorkflow(obj_retriever, sql_database, vector_index_dict, sql_retriever, top_n, local_model, response_synthesis_prompt, logger)
+            workflow = Text2SQLWorkflow(obj_retriever, sql_database, vector_index_dict, sql_retriever, top_n, local_model, final_result_format, response_synthesis_prompt, logger)
             
             result = await workflow.run(query=query_text, timeout=workflow_timeout)
             logger.info(f"Stage 03 completed. Final Result:\n{result}")

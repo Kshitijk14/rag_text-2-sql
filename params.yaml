@@ -28,6 +28,8 @@ MODEL_OUTPUT_FORMAT: "json"
 MODEL_OUTPUT_FORMAT_JSON: true
 MODEL_THINKING: true
 
+FINAL_ANSWER_FORMAT: "answer" # options: "full" or "raw"
+
 
 LOCAL_EMBEDDING_MODEL: "sentence-transformers/all-MiniLM-L6-v2"
 # LOCAL_LLM_MODEL: "qwen3:0.6b"
