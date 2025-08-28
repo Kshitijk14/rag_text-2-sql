@@ -6,7 +6,6 @@ import asyncio
 from pathlib import Path
 from typing import List, Dict
 
-from llama_index.core import Settings
 from llama_index.core.objects import SQLTableSchema
 from llama_index.core.workflow import (
     Workflow, 
@@ -19,16 +18,22 @@ from utils.config import CONFIG
 from utils.logger import setup_logger
 
 from utils.helpers.common import TableInfo
+from utils.helpers.common import (
+    prep_db_engine, 
+    prep_summary_engine, 
+    wrap_sql_engine
+)
+from utils.helpers.summary_helpers import (
+    # load_summaries_from_sqlite,
+    # filter_valid_summaries,
+    load_summaries_from_json,
+    filter_valid_summaries_from_json
+)
 from utils.helpers.retriever_helpers import (
     build_object_index,
     create_retrievers
 )
-from utils.helpers.summary_helpers import (
-    load_summaries_from_sqlite,
-    filter_valid_summaries,
-    load_summaries_from_json,
-    filter_valid_summaries_from_json
-)
+from utils.populate.custom_index_load import load_all_indexes_from_chroma
 from utils.llm.get_prompt_temp import RESPONSE_SYNTHESIS_PROMPT
 from utils.workflow.custom_events import (
     TableRetrievedEvent,
@@ -36,7 +41,10 @@ from utils.workflow.custom_events import (
     SQLPromptReadyEvent,
     SQLGeneratedEvent,
     SQLParsedEvent,
-    SQLResultsEvent,
+    # SQLResultsEvent,
+    SQLResultSuccessEvent,
+    SQLResultFailureEvent,
+    RetryPromptEvent,
     ResponsePromptReadyEvent,
 )
 from utils.workflow.custom_fallbacks import (
@@ -44,8 +52,9 @@ from utils.workflow.custom_fallbacks import (
     analyze_sql_error,
     create_t2s_prompt,
 )
-from utils.helpers.workflow_helpers import parse_response_to_sql
+from utils.helpers.workflow_helpers import parse_llm_json
 from utils.llm.get_llm_func import get_llm_func
+# from utils.workflow.visualize import visualize_workflow_structure_only
 
 
 # configs
@@ -58,6 +67,7 @@ TOP_K = CONFIG["TOP_K"]
 TOP_N = CONFIG["TOP_N"]
 WORKFLOW_TIMEOUT = CONFIG["WORKFLOW_TIMEOUT"]
 QUERY_TEXT = CONFIG["QUERY_TEXT"]
+FINAL_ANSWER_FORMAT = CONFIG["FINAL_ANSWER_FORMAT"]
 
 # logger
 LOG_DIR = os.path.join(os.getcwd(), str(LOG_PATH))
@@ -127,7 +137,7 @@ def get_table_context_and_rows_str(sql_database, vector_index_dict, query_str: s
 
 
 class Text2SQLWorkflow(Workflow):
-    def __init__(self, obj_retriever, sql_database, vector_index_dict, sql_retriever, top_n, local_model, response_synthesis_prompt, logger):
+    def __init__(self, obj_retriever, sql_database, vector_index_dict, sql_retriever, top_n, local_model, final_result_format, response_synthesis_prompt, logger):
         super().__init__()
         self.obj_retriever = obj_retriever
         self.sql_database = sql_database
@@ -136,15 +146,15 @@ class Text2SQLWorkflow(Workflow):
         self.top_n = top_n
         self.local_model = local_model
         self.response_synthesis_prompt = response_synthesis_prompt
+        self.final_result_format = final_result_format
         self.logger = logger
     
 
     @step
     async def input_step(self, ev: StartEvent) -> TableRetrievedEvent:
         self.logger.info(f"[Step 01] Process initial query and retrieve relevant tables")
+        
         query = ev.query
-
-        self.logger.info(f" - Use object retriever built from your table summaries")
         tables = self.obj_retriever.retrieve(query)  # candidate schemas
         self.logger.info(f" - Retrieved {len(tables)} candidate tables for query: {query}")
         
@@ -173,44 +183,43 @@ class Text2SQLWorkflow(Workflow):
         )
 
     @step
-    async def text2sql_prompt_step(self, ev: SchemaProcessedEvent | SQLResultsEvent) -> SQLPromptReadyEvent:
-        self.logger.info(f"[Step 03] Creating SQL prompt for query: {ev.query_str}")
-        if isinstance(ev, SchemaProcessedEvent):
-            table_schema = ev.table_schema
-            query_str = ev.query_str
-            retry_count = 0
-            error_message = ""
-        else:
-            table_schema = getattr(ev, 'table_schema', '')
-            query_str = ev.query_str
-            retry_count = getattr(ev, 'retry_count', 0) + 1
-            error_message = getattr(ev, 'error_message', '')
+    async def text2sql_prompt_step(self, ev: SchemaProcessedEvent) -> SQLPromptReadyEvent:
+        self.logger.info(f"[Step 03a] Creating SQL prompt for query: {ev.query_str}")
 
-        prompt = create_t2s_prompt(table_schema, query_str, retry_count, error_message)
+        prompt = create_t2s_prompt(ev.table_schema, ev.query_str, 0, "")
+
+        return SQLPromptReadyEvent(
+            t2s_prompt=prompt,
+            query_str=ev.query_str,
+            table_schema=ev.table_schema,
+            retry_count=0,
+            error_message=""
+        )
+
+    @step
+    async def text2sql_prompt_failure_step(self, ev: RetryPromptEvent) -> SQLPromptReadyEvent:
+        self.logger.info(f"[Step 03b] Creating SQL prompt for retry (query: {ev.query_str}, retry={ev.retry_count})")
+        
+        prompt = create_t2s_prompt(ev.table_schema, ev.query_str, ev.retry_count, ev.error_message)
         
         return SQLPromptReadyEvent(
             t2s_prompt=prompt,
-            query_str=query_str,
-            table_schema=table_schema,
-            retry_count=retry_count,
-            error_message=error_message
+            query_str=ev.query_str,
+            table_schema=ev.table_schema,
+            retry_count=ev.retry_count,
+            error_message=ev.error_message
         )
 
     @step
     async def text2sql_llm_step(self, ev: SQLPromptReadyEvent) -> SQLGeneratedEvent:
         self.logger.info(f"[Step 04] Running LLM to generate SQL for query: {ev.query_str}")
+        
         # sql_response = await self.local_model.acomplete(ev.t2s_prompt)
         # sql_response = await self.local_model.acomplete("SELECT 1;")
-        
-        try:
-            sql_response = await asyncio.wait_for(
-                self.local_model.acomplete(ev.t2s_prompt),
-                timeout=300  # step-specific
-            )
-        except asyncio.TimeoutError:
-            self.logger.error("LLM call exceeded 300s, aborting step.")
-            # maybe return a fallback event instead of crashing
-            raise
+        sql_response = await asyncio.wait_for(
+            self.local_model.acomplete(ev.t2s_prompt),
+            timeout=300  # step-specific
+        )
 
         return SQLGeneratedEvent(
             sql_query=str(sql_response).strip(),
@@ -223,17 +232,12 @@ class Text2SQLWorkflow(Workflow):
     @step
     async def sql_output_parser_step(self, ev: SQLGeneratedEvent) -> SQLParsedEvent:
         self.logger.info(f"[Step 05] Parsing LLM response to extract clean SQL for query: {ev.query_str}")
-        try:
-            clean_sql = parse_response_to_sql(ev.sql_query)  # primary parser
-        except Exception:
-            clean_sql = extract_sql_from_response(ev.sql_query, self.logger)  # fallback
         
-        if not clean_sql:
-            clean_sql = extract_sql_from_response(ev.sql_query, self.logger)
-
+        clean_sql = extract_sql_from_response(ev.sql_query, self.logger)
+        
         self.logger.info(f"Attempt #{ev.retry_count + 1}")
-        self.logger.info(f"LLM Response: {ev.sql_query}")
-        self.logger.info(f"Cleaned SQL: {clean_sql}")
+        self.logger.info(f"\n LLM Response: {ev.sql_query}")
+        self.logger.info(f"\n Cleaned SQL: {clean_sql}")
 
         return SQLParsedEvent(
             sql_query=clean_sql,
@@ -244,64 +248,49 @@ class Text2SQLWorkflow(Workflow):
         )
 
     @step
-    async def sql_retriever_step(self, ev: SQLParsedEvent) -> SQLResultsEvent:
+    async def sql_retriever_step(self, ev: SQLParsedEvent) -> SQLResultSuccessEvent | SQLResultFailureEvent:
         self.logger.info(f"[Step 06] Executing SQL for query: {ev.query_str}")
+        
         try:
             results = self.sql_retriever.retrieve(ev.sql_query)
             self.logger.info(f"[SUCCESS] Executed on Attempt #{ev.retry_count + 1}")
 
-            return SQLResultsEvent(
+            return SQLResultSuccessEvent(
                 context_str=str(results),
                 sql_query=ev.sql_query,
                 query_str=ev.query_str,
-                success=True
             )
         except Exception as e:
-            # self.logger.error(f"Execution failed (Attempt #{ev.retry_count + 1}): {e}")
             error_msg = str(e)
             self.logger.error(f"Execution failed (Attempt #{ev.retry_count + 1}): {error_msg}")
-
-            if ev.retry_count < MAX_RETRIES:
-                retry_event = SQLResultsEvent(
-                    context_str="",
-                    sql_query=ev.sql_query,
-                    query_str=ev.query_str,
-                    success=False,
-                    retry_count=ev.retry_count + 1,
-                )
-                retry_event.retry_count = ev.retry_count + 1
-                retry_event.error_message = analyze_sql_error(error_msg, ev.sql_query, ev.table_schema, self.logger)
-                retry_event.table_schema = ev.table_schema
-                
-                return retry_event
-            else:
-                return SQLResultsEvent(
-                    context_str=(f"Failed after {MAX_RETRIES+1} attempts. Final error: {error_msg}"),
-                    sql_query=ev.sql_query,
-                    query_str=ev.query_str,
-                    success=False,
-                    retry_count=ev.retry_count + 1,
-                )
+            analyzed_error_msg = analyze_sql_error(error_msg, ev.sql_query, ev.table_schema, self.logger)
+            
+            return SQLResultFailureEvent(
+                error_message=analyzed_error_msg,
+                sql_query=ev.sql_query,
+                query_str=ev.query_str,
+                table_schema=ev.table_schema,
+                retry_count=ev.retry_count + 1,
+            )
 
     @step
-    async def retry_handler_step(self, ev: SQLResultsEvent) -> SQLPromptReadyEvent:
+    async def retry_handler_step(self, ev: SQLResultFailureEvent) -> RetryPromptEvent | StopEvent:
         self.logger.info(f"[Step 07] Handling retry for query: {ev.query_str}")
-        if ev.success:
-            return None
         
-        return SQLPromptReadyEvent(
-            t2s_prompt="",  # regenerated later
+        if ev.retry_count >= MAX_RETRIES:
+            return StopEvent(result=f"Failed to get valid SQL results after {MAX_RETRIES} attempts.\n Final error: {ev.error_message}")
+        
+        return RetryPromptEvent(
             query_str=ev.query_str,
-            table_schema=getattr(ev, 'table_schema', ''),
+            table_schema=ev.table_schema,
             retry_count=ev.retry_count,
-            error_message=getattr(ev, 'error_message', 'Unknown error')
+            error_message=ev.error_message,
         )
 
     @step
-    async def response_synthesis_prompt_step(self, ev: SQLResultsEvent) -> ResponsePromptReadyEvent:
+    async def response_synthesis_prompt_step(self, ev: SQLResultSuccessEvent) -> ResponsePromptReadyEvent:
         self.logger.info(f"[Step 08] Preparing synthesis prompt for query: {ev.query_str}")
-        if not ev.success:
-            return None
+        
         prompt = self.response_synthesis_prompt.format(
             query_str=ev.query_str,
             context_str=ev.context_str,
@@ -316,47 +305,56 @@ class Text2SQLWorkflow(Workflow):
     @step
     async def response_synthesis_llm_step(self, ev: ResponsePromptReadyEvent) -> StopEvent:
         self.logger.info(f"[Step 09] Generating final answer for query: {ev.query_str}")
-        answer = await self.local_model.acomplete(ev.rs_prompt)
         
-        return StopEvent(result=str(answer))
+        raw_answer = await self.local_model.acomplete(ev.rs_prompt)
+        final_result = parse_llm_json(raw_answer, self.logger, mode=self.final_result_format)
+        return StopEvent(result=final_result)
 
 
-async def run_text2sql_workflow(
-    summary_engine, 
-    engine, 
-    sql_database, 
-    table_node_mapping, 
-    vector_index_dict, 
-    sqlite_db_dir=SQLITE_DB_DIR,
-    top_k=TOP_K, 
-    top_n=TOP_N, 
+async def run_text2sql_workflow( 
+    main_db_dir: Path = CHINOOK_DB_PATH, 
+    sqlite_db_dir: Path = SQLITE_DB_DIR,
+    chroma_db_dir: Path= CHROMA_DB_DIR,
+    top_k: int = TOP_K, 
+    top_n: int = TOP_N, 
     response_synthesis_prompt: str = RESPONSE_SYNTHESIS_PROMPT, 
     workflow_timeout: float = WORKFLOW_TIMEOUT,
-    query_text: str = QUERY_TEXT
+    query_text: str = QUERY_TEXT,
+    final_result_format: str = FINAL_ANSWER_FORMAT
 ):
     logger = setup_logger("workflow_logger", LOG_FILE)
 
     try:
         try:
             logger.info(" ")
-            logger.info("--------++++++++Starting Retrieval sub-stage.....")
-            
+            logger.info("--------++++++++Starting Retrieval Creation sub-stage.....")
+
+            logger.info("Preparing database connections...")
+            engine, _ = prep_db_engine(main_db_dir, logger)
+            summary_engine, _ = prep_summary_engine(sqlite_db_dir, logger)
+
+            logger.info("Loading and filtering table summaries...")
             # rows = load_summaries_from_sqlite(summary_engine, logger)
             # table_schema_objs = filter_valid_summaries(rows, engine, logger)
-
+            
             rows = load_summaries_from_json(sqlite_db_dir, logger)
             table_schema_objs = filter_valid_summaries_from_json(rows, engine, logger)
 
+            logger.info("Wrapping SQL database and table node mapping...")
+            sql_database, table_node_mapping = wrap_sql_engine(engine, logger)
+
+            logger.info("Building object index from table summaries...")
             obj_index = build_object_index(table_schema_objs, table_node_mapping, logger)
 
+            logger.info("Creating retrievers...")
             obj_retriever, sql_retriever = create_retrievers(sql_database, obj_index, top_k, logger)
-            
-            # table_parser_component = get_table_context_and_rows_str(
-            #     sql_database, vector_index_dict, query_text, table_schema_objs, top_n, logger
-            # )
+
+            vector_index_dict = load_all_indexes_from_chroma(chroma_db_dir, logger)
+
+            # table_parser_component = get_table_context_and_rows_str(sql_database, vector_index_dict, query_text, table_schema_objs, top_n, logger)
             # logger.info(f"Updated table context with rows:\n{table_parser_component}")
             
-            logger.info("--------++++++++Retrieval sub-stage successfully completed.")
+            logger.info("--------++++++++Retrieval Creation sub-stage successfully completed.")
             logger.info(" ")
         except Exception as e:
             logger.error(f"Error at retrieval sub-stage: {e}")
@@ -367,12 +365,10 @@ async def run_text2sql_workflow(
             logger.info("--------++++++++Starting Query Workflow stage.....")
             
             local_model = get_llm_func()
-            workflow = Text2SQLWorkflow(obj_retriever, sql_database, vector_index_dict, sql_retriever, top_n, local_model, response_synthesis_prompt, logger)
+            workflow = Text2SQLWorkflow(obj_retriever, sql_database, vector_index_dict, sql_retriever, top_n, local_model, final_result_format, response_synthesis_prompt, logger)
             
-            # result = await asyncio.wait_for(
-            #         workflow.run(query=query_text), 
-            #         timeout=workflow_timeout
-            #     )
+            # visualize_workflow_structure_only(workflow)
+            
             result = await workflow.run(query=query_text, timeout=workflow_timeout)
             logger.info(f"Stage 03 completed. Final Result:\n{result}")
             
@@ -386,10 +382,22 @@ async def run_text2sql_workflow(
 
         finally:
             # Manual memory cleanup
-            del summary_engine, engine, sql_database, table_node_mapping, vector_index_dict, rows, table_schema_objs, obj_index, obj_retriever, sql_retriever
-            gc.collect()
-        
-        return result
+            logger.info("Cleaning up resources...")
+            del (
+                engine, summary_engine, 
+                rows, table_schema_objs,
+                sql_database, table_node_mapping,
+                obj_index, obj_retriever, sql_retriever,
+                vector_index_dict,
+                local_model,
+                workflow,
+                result
+            )
+            gc.collect()        
     except Exception as e:
         logger.error(f"Error at [Stage 03]: {e}")
         logger.debug(traceback.format_exc())
+
+
+if __name__ == "__main__":
+    asyncio.run(run_text2sql_workflow())

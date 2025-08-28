@@ -30,12 +30,30 @@ class SQLParsedEvent(Event):
     retry_count: int = 0
     error_message: str = ""
 
-class SQLResultsEvent(Event):
+# class SQLResultsEvent(Event):
+#     context_str: str
+#     sql_query: str
+#     query_str: str
+#     success: bool = True
+#     retry_count: int = 0
+
+class SQLResultSuccessEvent(Event):
     context_str: str
     sql_query: str
     query_str: str
-    success: bool = True
+
+class SQLResultFailureEvent(Event):
+    error_message: str
+    sql_query: str
+    query_str: str
+    table_schema: str
     retry_count: int = 0
+
+class RetryPromptEvent(Event):
+    query_str: str
+    table_schema: str
+    retry_count: int
+    error_message: str
 
 class ResponsePromptReadyEvent(Event):
     query_str: str

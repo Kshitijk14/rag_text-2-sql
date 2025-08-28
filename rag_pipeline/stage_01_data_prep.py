@@ -9,13 +9,14 @@ import json
 from pathlib import Path
 import pandas as pd
 
-from sqlalchemy import create_engine, text, inspect
+from sqlalchemy import text
 from llama_index.core.program import LLMTextCompletionProgram
 
 from utils.config import CONFIG
 from utils.logger import setup_logger
 
 from utils.helpers.common import TableInfo
+from utils.helpers.common import prep_db_engine, prep_summary_engine
 from utils.llm.get_prompt_temp import TABLE_INFO_PROMPT
 from utils.llm.get_llm_func import get_llm_func
 from utils.helpers.summary_helpers import ( 
@@ -63,24 +64,6 @@ def extract_first_json_block(text: str, logger):
         return None
 
 
-def prep_summary_engine(sqlite_db_dir: Path, main_db_dir: Path, logger):
-    """Prepare the SQLite engine for storing table summaries."""
-    os.makedirs(sqlite_db_dir, exist_ok=True)
-    summary_db_path = os.path.join(sqlite_db_dir, "table_summaries.db")
-
-    try:
-        logger.info(f"Creating SQLite DB Engine for the new summaries database: {summary_db_path}")
-        summary_engine = create_engine(f"sqlite:///{summary_db_path}")
-
-        logger.info(f"Creating SQLite DB Engine for the existing Chinook database at {main_db_dir}")
-        engine = create_engine(f"sqlite:///{main_db_dir}")
-        inspector = inspect(engine)
-
-        return summary_engine, summary_db_path, engine, inspector
-    except Exception as e:
-        logger.error(f"Error preparing summary engine: {e}")
-        return None, None, None, None
-
 def summary_parser(program, df_str, inspector, table, logger):
     raw_output = program(
         table_str=df_str,
@@ -110,7 +93,6 @@ def summary_parser(program, df_str, inspector, table, logger):
 def generate_table_summary(
     program, 
     summary_engine, 
-    summary_db_path, 
     engine, 
     inspector, 
     sqlite_db_dir: Path, 
@@ -170,10 +152,10 @@ def clear_summary_database(sqlite_db_dir):
         shutil.rmtree(sqlite_db_dir)
 
 def run_data_preparation(
-    clear=False,
+    clear: bool = False,
     table_info_prompt_temp: str = TABLE_INFO_PROMPT,
-    sqlite_db_dir: Path = SQLITE_DB_DIR,
     main_db_dir: Path = CHINOOK_DB_PATH, 
+    sqlite_db_dir: Path = SQLITE_DB_DIR,
     max_retries: int = MAX_RETRIES
 ):
     
@@ -182,17 +164,21 @@ def run_data_preparation(
     logger.info("--------++++++++Starting Data Preparation stage.....")
     
     if clear:
-            logger.info("[Stage 01, Part 00.1] (CLEAR DB) Clearing the summary db...")
+            logger.info("(CLEAR DB) Clearing the summary db...")
             clear_summary_database(sqlite_db_dir)
-            logger.info("[Stage 01, Part 00.1] (CLEAR DB) Summary db cleared successfully.")
+            logger.info("(CLEAR DB) Summary db cleared successfully.")
 
     try:
+        logger.info("Preparing engines...")
         program = text_completion_program(table_info_prompt_temp)
+        
+        logger.info("Connecting to main and summary databases...")
+        engine, inspector = prep_db_engine(main_db_dir, logger)
+        summary_engine, summary_db_path = prep_summary_engine(sqlite_db_dir, logger)
 
-        summary_engine, summary_db_path, engine, inspector = prep_summary_engine(sqlite_db_dir, main_db_dir, logger)
-
+        logger.info("Generating table summaries...")
         table_infos = generate_table_summary(
-            program, summary_engine, summary_db_path, engine, inspector, sqlite_db_dir, max_retries, logger
+            program, summary_engine, engine, inspector, sqlite_db_dir, max_retries, logger
         )
 
         logger.info("--------++++++++Data Preparation stage successfully completed.")
@@ -202,16 +188,21 @@ def run_data_preparation(
         for t in table_infos:
             logger.info(f"- {t.table_name}: {t.table_summary}")
 
-        logger.info(f"\nSaved {len(table_infos)} summaries")
+        logger.info(f"Saved {len(table_infos)} summaries")
         
         # Manual memory cleanup
-        del program, summary_db_path, inspector, table_infos
+        logger.info("Cleaning up resources...")
+        del (
+            program, 
+            engine, inspector, 
+            summary_engine, summary_db_path, 
+            table_infos
+        )
         gc.collect()
-        
-        return summary_engine, engine
     except Exception as e:
         logger.error(f"Error at [Stage 01]: {e}")
         logger.debug(traceback.format_exc())
+
 
 if __name__ == "__main__":
     run_data_preparation()

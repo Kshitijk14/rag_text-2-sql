@@ -1,6 +1,6 @@
 TABLE_INFO_PROMPT = ("""\
     You are an expert data engineer. Return only a JSON object, with no explanation, no prose, no markdown, and no trailing text. Write a 2-3 sentence summary of the given SQL table, describing its purpose and key relationships.
-    You are to produce **only** a JSON object matching the following exact schema:
+    You are to produce **ONLY** a JSON object matching the following exact schema:
 
     {
         "table_name": "<short_name_in_snake_case_without_spaces>",
@@ -13,7 +13,7 @@ TABLE_INFO_PROMPT = ("""\
         "table_summary": "Summary of album and artist data. Table contains albums with titles and artist IDs, with AlbumId as the primary key and ArtistId referencing an artist table."
     }
 
-    Rules:
+    RULES:
     - The table_name must be unique to the table, describe it clearly, and be in snake_case.
     - Do NOT output a generic table name (e.g., "table", "my_table").
     - Do NOT make the table name one of the following: {exclude_table_name_list}.
@@ -73,10 +73,33 @@ RETRY_TEXT_2_SQL_PROMPT = ("""
     Your corrected SQL query:
 """)
 
-RESPONSE_SYNTHESIS_PROMPT = (
-    "Given an input question, synthesize a response from the query results.\n"
-    "Query: {query_str}\n"
-    "SQL: {sql_query}\n"
-    "SQL Response: {context_str}\n"
-    "Response: "
-)
+# RESPONSE_SYNTHESIS_PROMPT = (
+#     "Given an input question, synthesize a response from the query results.\n"
+#     "Query: {query_str}\n"
+#     "SQL: {sql_query}\n"
+#     "SQL Response: {context_str}\n"
+#     "Response: "
+# )
+
+RESPONSE_SYNTHESIS_PROMPT = ("""
+    Given an input question and the SQL query results, synthesize a response from the query results. 
+    Return only a JSON object, with no explanation, no prose, no markdown, and no trailing text. 
+    Finally, you are to produce **ONLY** a JSON object returning the final answer, matching the following exact schema:
+
+    {{
+        "query": "<the input question>",
+        "sql": "<the executed SQL query>",
+        "sql_response": "<the SQL query results>",
+        "answer": "<concise natural language answer>"
+    }}
+    
+    RULES:
+    - Do NOT include extra text before/after the JSON.
+    - Do NOT include any other keys or text before/after the JSON.
+    - Do NOT wrap in ```json.
+    
+    Query: {query_str}
+    SQL: {sql_query}
+    SQL Response: {context_str}
+    Final Response:\n 
+""")
