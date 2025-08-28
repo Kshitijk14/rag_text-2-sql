@@ -3,8 +3,6 @@ import json
 
 from typing import Any, Union
 
-from llama_index.core.llms import ChatResponse
-
 
 def _is_valid_sql_start(text: str) -> bool:
     """Check if text starts with valid SQL"""
@@ -39,21 +37,21 @@ def _clean_sql_query(sql: str) -> str:
     return sql
 
 
-def parse_response_to_sql(response: ChatResponse) -> str:
-    """Parse response into a clean SQL string."""
-    response = response.message.content
+# def parse_response_to_sql(response: str) -> str:
+#     """Parse response into a clean SQL string."""
+#     response = str(response)
 
-    sql_query_start = response.find("SQLQuery:")
-    if sql_query_start != -1:
-        response = response[sql_query_start:]
-        if response.startswith("SQLQuery:"):
-            response = response[len("SQLQuery:") :]
+#     sql_query_start = response.find("SQLQuery:")
+#     if sql_query_start != -1:
+#         response = response[sql_query_start:]
+#         if response.startswith("SQLQuery:"):
+#             response = response[len("SQLQuery:") :]
 
-    sql_result_start = response.find("SQLResult:")
-    if sql_result_start != -1:
-        response = response[:sql_result_start]
+#     sql_result_start = response.find("SQLResult:")
+#     if sql_result_start != -1:
+#         response = response[:sql_result_start]
 
-    return response.strip().strip("```").strip()
+#     return response.strip().strip("```").strip()
 
 
 def _repair_json_string(text: str) -> str:
