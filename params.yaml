@@ -32,5 +32,6 @@ FINAL_ANSWER_FORMAT: "answer" # options: "full" or "raw"
 
 
 LOCAL_EMBEDDING_MODEL: "sentence-transformers/all-MiniLM-L6-v2"
+LOCAL_LLM_MODEL: "qwen3:1.7b"
 # LOCAL_LLM_MODEL: "qwen3:0.6b"
-LOCAL_LLM_MODEL: "gemma3:270m"
+# LOCAL_LLM_MODEL: "gemma3:270m"
