@@ -54,7 +54,7 @@ from utils.workflow.custom_fallbacks import (
 )
 from utils.helpers.workflow_helpers import parse_llm_json
 from utils.llm.get_llm_func import get_llm_func
-# from utils.workflow.visualize import visualize_workflow_structure_only
+from utils.workflow.visualize import visualize_workflow_structure_only
 
 
 # configs
@@ -367,7 +367,7 @@ async def run_text2sql_workflow(
             local_model = get_llm_func()
             workflow = Text2SQLWorkflow(obj_retriever, sql_database, vector_index_dict, sql_retriever, top_n, local_model, final_result_format, response_synthesis_prompt, logger)
             
-            # visualize_workflow_structure_only(workflow)
+            visualize_workflow_structure_only(workflow)
             
             result = await workflow.run(query=query_text, timeout=workflow_timeout)
             logger.info(f"Stage 03 completed. Final Result:\n{result}")

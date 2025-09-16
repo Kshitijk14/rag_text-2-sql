@@ -10,7 +10,7 @@
 ## run:
 
 1. start phoenix server: ``uv run -m phoenix.server.main serve``
-2. start ollama server: ``ollama server``
+2. start ollama server: ``ollama serve``
 3. run pipeline: ``uv run main.py``
 
 ## On a surface level
