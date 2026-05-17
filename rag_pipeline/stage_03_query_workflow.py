@@ -152,7 +152,7 @@ class Text2SQLWorkflow(Workflow):
 
     @step
     async def input_step(self, ev: StartEvent) -> TableRetrievedEvent:
-        self.logger.info(f"[Step 01] Process initial query and retrieve relevant tables")
+        self.logger.info("[Step 01] Process initial query and retrieve relevant tables")
         
         query = ev.query
         tables = self.obj_retriever.retrieve(query)  # candidate schemas
