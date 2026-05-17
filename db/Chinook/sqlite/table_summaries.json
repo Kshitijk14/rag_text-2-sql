@@ -1,0 +1,46 @@
+[
+  {
+    "table_name": "Album",
+    "table_summary": "Summary of album and artist data. Table contains albums with titles and artist IDs, with AlbumId as the primary key and ArtistId referencing an artist table."
+  },
+  {
+    "table_name": "Artist",
+    "table_summary": "Summary of album and artist data. Table contains albums with titles and artist IDs, with AlbumId as the primary key and ArtistId referencing an artist table."
+  },
+  {
+    "table_name": "Customer",
+    "table_summary": "Summary of album and artist data. Table contains albums with titles and artist IDs, with AlbumId as the primary key and ArtistId referencing an artist table."
+  },
+  {
+    "table_name": "Employee",
+    "table_summary": "Summary of album and artist data. Table contains albums with titles and artist IDs, with AlbumId as the primary key and ArtistId referencing an artist table."
+  },
+  {
+    "table_name": "Genre",
+    "table_summary": "Summary of album and artist data. Table contains albums with titles and artist IDs, with AlbumId as the primary key and ArtistId referencing an artist table."
+  },
+  {
+    "table_name": "Invoice",
+    "table_summary": "Summary of album and artist data. Table contains albums with titles and artist IDs, with AlbumId as the primary key and ArtistId referencing an artist table."
+  },
+  {
+    "table_name": "InvoiceLine",
+    "table_summary": "Summary of album and artist data. Table contains albums with titles and artist IDs, with AlbumId as the primary key and ArtistId referencing an artist table."
+  },
+  {
+    "table_name": "MediaType",
+    "table_summary": "Summary of album and artist data. Table contains albums with titles and artist IDs, with AlbumId as the primary key and ArtistId referencing an artist table."
+  },
+  {
+    "table_name": "Playlist",
+    "table_summary": "Summary of album and artist data. Table contains albums with titles and artist IDs, with AlbumId as the primary key and ArtistId referencing an artist table."
+  },
+  {
+    "table_name": "PlaylistTrack",
+    "table_summary": "Summary of album and artist data. Table contains albums with titles and artist IDs, with AlbumId as the primary key and ArtistId referencing an artist table."
+  },
+  {
+    "table_name": "Track",
+    "table_summary": "Summary of album and artist data. Table contains albums with titles and artist IDs, with AlbumId as the primary key and ArtistId referencing an artist table."
+  }
+]
